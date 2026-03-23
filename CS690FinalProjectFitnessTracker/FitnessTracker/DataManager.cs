@@ -4,8 +4,11 @@ public class DataManager
 {
     FileManager fileManager;
 
+// session state
     public User? CurrentUser { get; private set; }
+    public WorkoutRoutine ? CurrentWorkoutRoutine { get; private set; }
 
+// data collections
     public List<User> Users { get; private set; }
     public List<Exercise> ExerciseLibrary { get; private set; }
 
@@ -79,6 +82,8 @@ public class DataManager
         SaveUsers();
         return true;
     }
+
+    // remove user
 
 
 
@@ -195,6 +200,10 @@ public class DataManager
         WorkoutRoutines.Remove(routine);
         SaveWorkoutRoutines();
         return true;
+    }
+
+    public void SetCurrentWorkoutRoutine(WorkoutRoutine routine) {
+        CurrentWorkoutRoutine = routine;
     }
 
 
