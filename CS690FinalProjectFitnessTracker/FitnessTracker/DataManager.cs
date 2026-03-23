@@ -33,6 +33,7 @@ public class DataManager
         // LoadWorkoutRoutines();
     }
 
+// user management methods
     public void LoadUsers()
     {
         try
@@ -65,6 +66,15 @@ public class DataManager
         CurrentUser = user;
     }
 
+    public string GenerateUserId()
+    {
+        return $"user-{Guid.NewGuid()}";
+    }
+
+
+
+
+// exercise library methods 
     private void LoadExercises()
     {
         try
@@ -94,6 +104,13 @@ public class DataManager
         var data = string.Join(Environment.NewLine, ExerciseLibrary.Select(ex => $"{ex.ExerciseId}:{ex.ExerciseName}:{ex.ExerciseDescription}:{ex.ExType}"));
         fileManager.OverwriteData("data/exercises.txt", data);
     }
+
+    public string GenerateExerciseId()
+    {
+        return $"exercise-{Guid.NewGuid()}";
+    }
+
+    
 
     // private void LoadWorkoutRoutines()
     // {

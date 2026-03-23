@@ -22,8 +22,8 @@ public class ConsoleUI
             Console.WriteLine("Welcome to the Fitness Tracker, " + userDisplay + "!");
             Console.WriteLine("1. Create User");
             Console.WriteLine("2. Select User");
-            Console.WriteLine("3. Add Exercise");
-            Console.WriteLine("4. View Exercises");
+            Console.WriteLine("3. Exercises Library");
+            Console.WriteLine("4. Workout Library");
             Console.WriteLine("5. Start Workout");
             Console.WriteLine("6. View Workout History");
             Console.WriteLine("7. View Progress and Stats");
@@ -42,7 +42,6 @@ public class ConsoleUI
                     SelectUser();
                     break;
                 case "3":
-                    // AddExercise();
                     if (dataManager.CurrentUser == null)
                     {
                         Console.WriteLine("Please select or create a user first.");
@@ -73,22 +72,12 @@ public class ConsoleUI
         }
     }
 
+// user methods
     private void CreateUser()
     {
         Console.WriteLine("Create a new user");
-        Console.Write("Enter User Id: "); // TODO: this should be auto-generated
-        var userId = Console.ReadLine().Trim();
-
-        // validate user id input
-        if (string.IsNullOrEmpty(userId))
-        {
-            Console.WriteLine("User Id cannot be empty. Please try again.");
-            return;
-        }
-        if (dataManager.Users.Any(u => u.UserId == userId))
-        {            Console.WriteLine("User Id already exists. Please try again.");
-            return;
-        }
+        var userId = dataManager.GenerateUserId();
+        Console.WriteLine($"Generated User Id: {userId}");
 
         Console.WriteLine("Enter User Name: ");
         var userName = Console.ReadLine();
@@ -146,12 +135,14 @@ public class ConsoleUI
         Console.ReadKey();
     }
 
+
+    // exercise library menu 
     private void ExercisesLibraryMenu()
     {
         Console.WriteLine("Exercises Library");
         Console.WriteLine("1. Add Exercise");
         Console.WriteLine("2. Remove Exercise");
-        Console.WriteLine("2. View Exercises");
+        Console.WriteLine("3. View Exercises");
         Console.WriteLine("4. Back to Main Menu");
 
         var input = Console.ReadLine();
@@ -161,15 +152,14 @@ public class ConsoleUI
                 // TODO: Add Exercise
                 AddExercise();
                 break;
-            case "2":   
+            case "2":
                 // TODO: Remove Exercise
                 // RemoveExercise();
                 throw new NotImplementedException();
                 break;
             case "3":
                 // TODO: View Exercises
-                // ViewExercises();
-                throw new NotImplementedException();
+                ViewExercises();
                 break;
             case "4":
                 ShowMainMenu();
@@ -180,23 +170,14 @@ public class ConsoleUI
         }
     }
 
+    // exercise library methods
+
     public void AddExercise()
     {
         Console.WriteLine("Add a new exercise");
-        Console.Write("Enter Exercise Id: "); // TODO: this should be auto-generated
-        var exerciseId = Console.ReadLine()?.Trim();
+        var exerciseId = dataManager.GenerateExerciseId();
+        Console.WriteLine($"Generated Exercise Id: {exerciseId}");
 
-        // validate exercise id input
-        if (string.IsNullOrEmpty(exerciseId))
-        {
-            Console.WriteLine("Exercise Id cannot be empty. Please try again.");
-            return;
-        }
-        if (dataManager.ExerciseLibrary.Any(e => e.ExerciseId == exerciseId))
-        {
-            Console.WriteLine("Exercise Id already exists. Please try again.");
-            return;
-        }
 
         Console.WriteLine("Enter Exercise Name: ");
         var exerciseName = Console.ReadLine()?.Trim();
@@ -239,6 +220,26 @@ public class ConsoleUI
         dataManager.SaveExercises();
 
         Console.WriteLine($"Exercise {exerciseName} added successfully!");
+        Console.WriteLine("Press any key to return to the Exercises Library menu...");
+        Console.ReadKey();
+    }
+
+    public void ViewExercises()
+    {
+        if (dataManager.ExerciseLibrary.Count == 0)
+        {
+            Console.WriteLine("No exercises found. Please add exercises first.");
+            return;
+        }
+
+        Console.WriteLine("Exercises Library:");
+        foreach (var exercise in dataManager.ExerciseLibrary)
+        {
+            Console.WriteLine($"ID: {exercise.ExerciseId}, Name: {exercise.ExerciseName}, Type: {exercise.ExType}");
+            Console.WriteLine($"Description: {exercise.ExerciseDescription}");
+            Console.WriteLine("-----------------------------------");
+        }
+
         Console.WriteLine("Press any key to return to the Exercises Library menu...");
         Console.ReadKey();
     }
