@@ -53,6 +53,13 @@ public class DataManager
         }
     }
 
+    public void SaveUsers()
+    {
+
+        var data = string.Join(Environment.NewLine, Users.Select(user => $"{user.UserId}:{user.UserName}"));
+        fileManager.OverwriteData("data/users.txt", data);
+    }
+
     public void SetCurrentUser(User user)
     {
         CurrentUser = user;
@@ -82,15 +89,16 @@ public class DataManager
         }
     }
 
+    public void SaveExercises()
+    {
+        var data = string.Join(Environment.NewLine, ExerciseLibrary.Select(ex => $"{ex.ExerciseId}:{ex.ExerciseName}:{ex.ExerciseDescription}:{ex.ExType}"));
+        fileManager.OverwriteData("data/exercises.txt", data);
+    }
+
     // private void LoadWorkoutRoutines()
     // {
     // }
 
-    public void SaveUsers()
-    {
 
-        var data = string.Join(Environment.NewLine, Users.Select(user => $"{user.UserId}:{user.UserName}"));
-        fileManager.OverwriteData("data/users.txt", data);
-    }
 
 }

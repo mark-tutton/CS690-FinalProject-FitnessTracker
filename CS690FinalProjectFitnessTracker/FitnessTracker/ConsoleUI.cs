@@ -159,8 +159,7 @@ public class ConsoleUI
         {
             case "1":
                 // TODO: Add Exercise
-                // AddExercise();
-                throw new NotImplementedException();
+                AddExercise();
                 break;
             case "2":   
                 // TODO: Remove Exercise
@@ -179,5 +178,68 @@ public class ConsoleUI
                 Console.WriteLine("Invalid option. Please try again.");
                 break;
         }
+    }
+
+    public void AddExercise()
+    {
+        Console.WriteLine("Add a new exercise");
+        Console.Write("Enter Exercise Id: "); // TODO: this should be auto-generated
+        var exerciseId = Console.ReadLine()?.Trim();
+
+        // validate exercise id input
+        if (string.IsNullOrEmpty(exerciseId))
+        {
+            Console.WriteLine("Exercise Id cannot be empty. Please try again.");
+            return;
+        }
+        if (dataManager.ExerciseLibrary.Any(e => e.ExerciseId == exerciseId))
+        {
+            Console.WriteLine("Exercise Id already exists. Please try again.");
+            return;
+        }
+
+        Console.WriteLine("Enter Exercise Name: ");
+        var exerciseName = Console.ReadLine()?.Trim();
+
+        // validate exercise name input
+        if (string.IsNullOrEmpty(exerciseName))
+        {
+            Console.WriteLine("Exercise Name cannot be empty. Please try again.");
+            return;
+        }
+        if (dataManager.ExerciseLibrary.Any(e => e.ExerciseName == exerciseName))
+        {
+            Console.WriteLine("Exercise Name already exists. Please try again.");
+            return;
+        }
+
+        Console.WriteLine("Enter Exercise Description: ");
+        var exerciseDescription = Console.ReadLine();
+
+        // validate exercise description input
+        if (string.IsNullOrEmpty(exerciseDescription))
+        {
+            Console.WriteLine("Exercise Description cannot be empty. Please try again.");
+            return;
+        }
+
+        Console.Write("Enter Exercise Type (0.Cardio, 1.Strength, 2.Flexibility, 3.Balance): ");
+
+        var exerciseTypeInput = Console.ReadLine()?.Trim();
+        if (!int.TryParse(exerciseTypeInput, out int exTypeChoice) || !Enum.IsDefined(typeof(ExerciseType), exTypeChoice))
+        {
+            Console.WriteLine("Invalid Exercise Type selection. Please try again.");
+            return;
+        }
+        var selectedExType = (ExerciseType)exTypeChoice;
+
+        // create exercise and save to data manager
+        var newExercise = new Exercise(exerciseId, exerciseName, exerciseDescription, selectedExType);
+        dataManager.ExerciseLibrary.Add(newExercise);
+        dataManager.SaveExercises();
+
+        Console.WriteLine($"Exercise {exerciseName} added successfully!");
+        Console.WriteLine("Press any key to return to the Exercises Library menu...");
+        Console.ReadKey();
     }
 }
