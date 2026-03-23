@@ -41,28 +41,37 @@ public class ConsoleUI
                 case "2":
                     SelectUser();
                     break;
-                case "3":
-                    // if (dataManager.CurrentUser == null)
-                    // {
-                    //     Console.WriteLine("Please select or create a user first.");
-                    //     break;
-                    // }                
+                case "3":             
                     ExercisesLibraryMenu();
                     break;
                 case "4":
                     WorkoutRoutinesLibraryMenu();
                     break;
                 case "5":
-                    // StartWorkout();
-                    throw new NotImplementedException();
+                    if (dataManager.CurrentUser == null)
+                    {
+                        Console.WriteLine("Please select or create a user first.");
+                        break;
+                    }   
+                    SelectWorkoutRoutineMenu();
                     break;
                 case "6":
-                    // HistoryMenu();
                     throw new NotImplementedException();
+                    // if (dataManager.CurrentUser == null)
+                    // {
+                    //     Console.WriteLine("Please select or create a user first.");
+                    //     break;
+                    // }   
+                    // HistoryMenu();
                     break;
                 case "7":
-                    // ProgressStatsMenu();
                     throw new NotImplementedException();
+                    // if (dataManager.CurrentUser == null)
+                    // {
+                    //     Console.WriteLine("Please select or create a user first.");
+                    //     break;
+                    // }   
+                    // ProgressStatsMenu();
                     break;
                 default:
                     Console.WriteLine("Invalid option. Please try again.");
@@ -167,7 +176,7 @@ public class ConsoleUI
         }
      
 
-        Console.WriteLine("Enter Exercise Description: ");
+        Console.WriteLine("Enter Exercise Description: "); // this could contain info like sets/reps/duration etc. TODO: add instructions for this input
         var exerciseDescription = Console.ReadLine()?.Trim();
 
         // validate exercise description input
@@ -336,4 +345,40 @@ public class ConsoleUI
         }
     }
 
+
+// start workout routine menu
+    private void StartWorkoutRoutineMenu()
+        {
+            if (dataManager.WorkoutRoutines.Count == 0)
+            {
+                Console.WriteLine("No workout routines found. Create a workout routine first.");
+                return;
+            } 
+
+            Console.WriteLine("Select a Workout Routine:");
+            for (int i = 0; i < dataManager.WorkoutRoutines.Count; i++)
+            {
+                var routine = dataManager.WorkoutRoutines[i];
+                Console.WriteLine($"{i + 1}. {routine.WorkoutRoutineName} ({routine.Exercises.Count} exercises)");
+            }
+
+            if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 1 && choice <= dataManager.WorkoutRoutines.Count)
+            {
+                var selectedRoutine = dataManager.WorkoutRoutines[choice - 1];
+                dataManager.SetCurrentWorkoutRoutine(selectedRoutine);
+                Console.WriteLine($"Selected Workout Routine: {selectedRoutine.WorkoutRoutineName}");
+
+                Console.WriteLine("Exercises in this routine: ");
+                foreach (var exercise in selectedRoutine.Exercises)
+                {
+                    Console.WriteLine($"- {exercise.ExerciseName} ({exercise.ExType})");
+                }
+
+                // TODO: handle starting workout/marking as completed
+            }
+            else
+            {
+                Console.WriteLine("Invalid selection. Please try again.");
+            }
+        }
 }
