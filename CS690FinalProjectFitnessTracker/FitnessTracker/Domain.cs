@@ -2,7 +2,19 @@
 
 namespace FitnessTracker;
 
-public enum.ExerciseType { Cardio, Strength, Flexibility, Balance }
+public class User
+{
+    public string UserId { get; }
+    public string UserName { get; }
+
+    public User(string userId, string userName)
+    {
+        UserId = userId;
+        UserName = userName;
+    }
+}
+
+public enum ExerciseType { Cardio, Strength, Flexibility, Balance }
 
 public class Exercise
 {
@@ -20,14 +32,13 @@ public class Exercise
     }
 }
 
-public class User
-{
-    public string UserId { get; }
-    public string UserName { get; }
+// build out ExerciseLibrary
 
-    public User(string userId, string userName)
-    {
-        UserId = userId;
-        UserName = userName;
-    }
-}
+// build out WorkoutRoutine
+
+// build out WorkoutSession
+
+// build out ProgressTracker
+
+// build out ExerciseLog
+
