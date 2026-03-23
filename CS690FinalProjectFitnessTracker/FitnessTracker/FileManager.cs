@@ -48,11 +48,4 @@ public class FileManager
         EnsureFileExists(fileName);
         return File.ReadAllLines(fileName);
     }
-
-    // reads all text from the specified file
-    public string ReadAllText(string fileName)
-    {
-        EnsureFileExists(fileName);
-        return File.ReadAllText(fileName);
-    }
 }
