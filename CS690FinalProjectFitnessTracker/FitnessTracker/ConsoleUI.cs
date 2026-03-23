@@ -1,45 +1,68 @@
-using System.Transactions;
-
 namespace FitnessTracker;
 
 
 public class ConsoleUI
 {
    
+    DataManager dataManager;
 
-   private readonly Dictionary<string, User> _users = new();
+    public ConsoleUI()
+    {
+        dataManager = new DataManager();
+    }
     public void ShowMainMenu()
     {
         while (true)
         {
-            Console.WriteLine("Welcome to the Fitness Tracker!");
+            var userDisplay = dataManager.CurrentUser != null
+                ? $"Current User: {dataManager.CurrentUser.UserName}"
+                : "No user selected";
+
+
+            Console.WriteLine("Welcome to the Fitness Tracker, " + userDisplay + "!");
             Console.WriteLine("1. Create User");
-            Console.WriteLine("2. Add Exercise");
-            Console.WriteLine("3. View Exercises");
-            Console.WriteLine("4. Exit");
+            Console.WriteLine("2. Select User");
+            Console.WriteLine("3. Add Exercise");
+            Console.WriteLine("4. View Exercises");
+            Console.WriteLine("5. Start Workout");
+            Console.WriteLine("6. View Workout History");
+            Console.WriteLine("7. View Progress and Stats");
+            Console.WriteLine("0. Exit");
 
             var input = Console.ReadLine();
             switch (input)
             {
+                case "0":
+                    Console.WriteLine("Exiting the app.");
+                    return;
                 case "1":
                     CreateUser();
                     break;
                 case "2":
-                    ExercisesLibraryMenu();
+                    SelectUser();
                     break;
                 case "3":
+                    // AddExercise();
+                    if (dataManager.CurrentUser == null)
+                    {
+                        Console.WriteLine("Please select or create a user first.");
+                        break;
+                    }                
+                    ExercisesLibraryMenu();
+                    break;
+                case "4":
                     // WorkoutLibraryMenu();
                     throw new NotImplementedException();
                     break;
-                case "4":
+                case "5":
                     // StartWorkout();
                     throw new NotImplementedException();
                     break;
-                case "5":
+                case "6":
                     // HistoryMenu();
                     throw new NotImplementedException();
                     break;
-                case "6":
+                case "7":
                     // ProgressStatsMenu();
                     throw new NotImplementedException();
                     break;
@@ -54,22 +77,70 @@ public class ConsoleUI
     {
         Console.WriteLine("Create a new user");
         Console.Write("Enter User Id: "); // TODO: this should be auto-generated
-        var userId = Console.ReadLine();
+        var userId = Console.ReadLine().Trim();
 
         // validate user id input
+        if (string.IsNullOrEmpty(userId))
+        {
+            Console.WriteLine("User Id cannot be empty. Please try again.");
+            return;
+        }
+        if (dataManager.Users.Any(u => u.UserId == userId))
+        {            Console.WriteLine("User Id already exists. Please try again.");
+            return;
+        }
 
         Console.WriteLine("Enter User Name: ");
         var userName = Console.ReadLine();
 
         // validate user name input
+        if (string.IsNullOrEmpty(userName))
+        {
+            Console.WriteLine("User Name cannot be empty. Please try again.");
+            return;
+        }
+        if (dataManager.Users.Any(u => u.UserName == userName))
+        {
+            Console.WriteLine("User Name already exists. Please try again.");
+            return;
+        }
 
 
-        // create user and add to dict // TODO: (this should be persisted in users.txt)
-
+        // create user and save to data manager
         var newUser = new User(userId, userName);
-        _users.TryAdd(userId, newUser);
+        dataManager.Users.Add(newUser);
+        dataManager.SaveUsers();
+        dataManager.SetCurrentUser(newUser);
 
         Console.WriteLine($"User {userName} created successfully!");
+
+        Console.WriteLine("Press any key to return to the main menu...");
+        Console.ReadKey();
+    }
+
+    private void SelectUser()
+    {
+        if (dataManager.Users.Count == 0)
+        {
+            Console.WriteLine("No users found. Please create a user first.");
+            return;
+        }
+
+        Console.WriteLine("Select a user:");
+        for (int i = 0; i < dataManager.Users.Count; i++)
+        {
+            Console.WriteLine($"{i + 1}. {dataManager.Users[i].UserName}");
+        }
+
+        if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 1 && choice <= dataManager.Users.Count)
+        {
+            dataManager.SetCurrentUser(dataManager.Users[choice - 1]);
+            Console.WriteLine($"Selected User {dataManager.CurrentUser.UserName}.");
+        }
+        else
+        {
+            Console.WriteLine("Invalid selection. Please try again.");
+        }
 
         Console.WriteLine("Press any key to return to the main menu...");
         Console.ReadKey();
