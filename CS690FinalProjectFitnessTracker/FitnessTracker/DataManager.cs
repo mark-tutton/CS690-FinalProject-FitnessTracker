@@ -14,7 +14,7 @@ public class DataManager
 
     public List<WorkoutRoutine> WorkoutRoutines { get; private set; }
 
-    // public List<WorkoutSession> WorkoutSessions { get; private set; }
+    public List<WorkoutSession> WorkoutSessions { get; private set; }
 
     // public List<ProgressTracker> ProgressTrackers { get; private set; }
 
@@ -27,13 +27,14 @@ public class DataManager
         Users = new List<User>();
         ExerciseLibrary = new List<Exercise>();
         WorkoutRoutines = new List<WorkoutRoutine>();
-        // WorkoutSessions = new List<WorkoutSession>();
+        WorkoutSessions = new List<WorkoutSession>();
         // ProgressTrackers = new List<ProgressTracker>();
         // StatsTrackers = new List<StatsTracker>();
 
         LoadUsers();
         LoadExercises();
         LoadWorkoutRoutines();
+        LoadWorkoutSessions();
     }
 
 // user management methods
@@ -206,6 +207,53 @@ public class DataManager
         CurrentWorkoutRoutine = routine;
     }
 
+// workout session methods
+    private void LoadWorkoutSessions()
+    {
+        try
+        {
+            var lines = fileManager.ReadAllLines("data/workoutSessions.txt");
+            foreach (var line in lines)
+            {
+                var parts = line.Split(":");
+                if (parts.Length >= 5)
+                {
+                    var sessionId = parts[0];
+                    var routine = WorkoutRoutines.FirstOrDefault(r => r.WorkoutRoutineId == parts[1]);
+                    var sessionDate = DateTime.Parse(parts[2]);
+                    var sessionCompleted = bool.Parse(parts[3]);
+                    var notes = parts[4];
 
+                    if (routine != null)
+                    {
+                        var session = new WorkoutSession(sessionId, sessionDate, routine);
+                        if (sessionCompleted) session.MarkSessionCompleted();
+                        session.AddNotes(notes);
+                        WorkoutSessions.Add(session);
+                    }
+                }
+            }
+        } catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading workout sessions: {ex.Message}");
+        }
+    }
+
+    private void SaveWorkoutSessions()
+    {
+        var data = string.Join(Environment.NewLine, WorkoutSessions.Select(ws => $"{ws.SessionId}:{ws.Routine.WorkoutRoutineId}:{ws.SessionDate}:{ws.IsCompleted}:{ws.Notes}"));
+        fileManager.OverwriteData("data/workoutSessions.txt", data);
+    }
+
+    public string GenerateWorkoutSessionId()
+    {
+        return $"workoutSession-{Guid.NewGuid()}";
+    }
+
+    public void AddWorkoutSession(WorkoutSession session)
+    {
+        WorkoutSessions.Add(session);
+        SaveWorkoutSessions();
+    }
 
 }

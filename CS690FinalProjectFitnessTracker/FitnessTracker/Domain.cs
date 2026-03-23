@@ -2,6 +2,7 @@
 
 namespace FitnessTracker;
 
+// User domain
 public class User
 {
     public string UserId { get; }
@@ -14,6 +15,7 @@ public class User
     }
 }
 
+// Exercise domain
 public enum ExerciseType { Cardio, Strength, Flexibility, Balance }
 
 public class Exercise
@@ -32,6 +34,7 @@ public class Exercise
     }
 }
 
+// WorkoutRoutine domain
 public class WorkoutRoutine
 {
     public string WorkoutRoutineId { get; }
@@ -62,11 +65,34 @@ public class WorkoutRoutine
    
 }
 
-// build out ExerciseLibrary
+// WorkoutSession domain
+public class WorkoutSession
+{
+    public string SessionId { get; }
+    public DateTime SessionDate { get; }
+    public WorkoutRoutine Routine { get; }
+    public string Notes { get; private set;}
+    public bool IsCompleted { get; private set; }
 
-// build out WorkoutRoutine
+    public WorkoutSession(string sessionId, DateTime sessionDate, WorkoutRoutine routine)
+    {
+        this.SessionId = sessionId;
+        SessionDate = sessionDate;
+        Routine = routine;
+        Notes = "";
+        IsCompleted = false;
+    }
 
-// build out WorkoutSession
+    public void MarkSessionCompleted()
+    {
+       IsCompleted = true;
+    }
+
+    public void AddNotes(string notes)
+    {
+        Notes = notes;
+    }
+}
 
 // build out ProgressTracker
 

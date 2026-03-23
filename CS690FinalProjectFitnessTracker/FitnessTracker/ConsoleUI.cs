@@ -53,7 +53,7 @@ public class ConsoleUI
                         Console.WriteLine("Please select or create a user first.");
                         break;
                     }   
-                    SelectWorkoutRoutineMenu();
+                    StartWorkoutRoutineMenu();
                     break;
                 case "6":
                     throw new NotImplementedException();
@@ -374,11 +374,28 @@ public class ConsoleUI
                     Console.WriteLine($"- {exercise.ExerciseName} ({exercise.ExType})");
                 }
 
-                // TODO: handle starting workout/marking as completed
-            }
-            else
-            {
-                Console.WriteLine("Invalid selection. Please try again.");
-            }
+                Console.Write("Mark this routine as completed? (y/n): ");
+                var completionInput = Console.ReadLine()?.Trim().ToLower();
+                if (completionInput == "y")
+                {
+                        // TODO: user should be able to enter a date+time for when the session was done
+
+                        var newSession = new WorkoutSession(dataManager.GenerateWorkoutSessionId(), DateTime.Now, selectedRoutine);
+                        newSession.MarkSessionCompleted();
+                        // TODO: hanlde notes input for workout session
+                        
+
+                        dataManager.AddWorkoutSession(newSession);
+                        Console.WriteLine("Workout session recorded as completed!");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Workout session not recorded.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Invalid selection. Please try again.");
+                }
         }
 }
