@@ -9,7 +9,7 @@ public class DataManager
     public List<User> Users { get; private set; }
     public List<Exercise> ExerciseLibrary { get; private set; }
 
-    // public List<WorkoutRoutine> WorkoutRoutines { get; private set; }
+    public List<WorkoutRoutine> WorkoutRoutines { get; private set; }
 
     // public List<WorkoutSession> WorkoutSessions { get; private set; }
 
@@ -23,14 +23,14 @@ public class DataManager
 
         Users = new List<User>();
         ExerciseLibrary = new List<Exercise>();
-        // WorkoutRoutines = new List<WorkoutRoutine>();
+        WorkoutRoutines = new List<WorkoutRoutine>();
         // WorkoutSessions = new List<WorkoutSession>();
         // ProgressTrackers = new List<ProgressTracker>();
         // StatsTrackers = new List<StatsTracker>();
 
         LoadUsers();
         LoadExercises();
-        // LoadWorkoutRoutines();
+        LoadWorkoutRoutines();
     }
 
 // user management methods
@@ -71,6 +71,17 @@ public class DataManager
         return $"user-{Guid.NewGuid()}";
     }
 
+    public bool AddUser(string userId, string userName)
+    {
+        if (Users.Any(u => u.UserName == userName)) return false;
+        var user = new User(userId, userName);
+        Users.Add(user);
+        SaveUsers();
+        return true;
+    }
+
+
+
 
 
 
@@ -110,11 +121,81 @@ public class DataManager
         return $"exercise-{Guid.NewGuid()}";
     }
 
-    
+    public bool AddExercise(Exercise exercise)
+    {
+        if (ExerciseLibrary.Any(e => e.ExerciseName == exercise.ExerciseName)) return false;
+        ExerciseLibrary.Add(exercise);
+        SaveExercises();
+        return true;
+    }
 
-    // private void LoadWorkoutRoutines()
-    // {
-    // }
+    public bool RemoveExercise(string exerciseId)
+    {
+        var exercise = ExerciseLibrary.FirstOrDefault(e => e.ExerciseId == exerciseId);
+        if (exercise == null) return false;
+        ExerciseLibrary.Remove(exercise);
+        SaveExercises();
+        return true;
+    }
+
+    
+// workout routine methods
+    private void LoadWorkoutRoutines()
+    {
+        try
+        {
+            var lines = fileManager.ReadAllLines("data/workoutRoutines.txt");
+            foreach (var line in lines)
+            {
+                var parts = line.Split(":");
+                if (parts.Length >= 3)
+                {
+                var routineId = parts[0];
+                var routineName = parts[1];
+                var exerciseIds = parts[2].Split(",");
+               
+                var exercises = exerciseIds
+                    .Select(id => ExerciseLibrary.FirstOrDefault(e => e.ExerciseId == id.Trim()))
+                    .ToList();
+                
+                                
+                Console.WriteLine($"Loaded routine '{routineName}' with {exercises.Count} exercises");
+                WorkoutRoutines.Add(new WorkoutRoutine(routineId, routineName, exercises));
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading workout routines: {ex.Message}");
+        }
+    }
+
+    public void SaveWorkoutRoutines()
+    {
+        var data = string.Join(Environment.NewLine, WorkoutRoutines.Select(wr => $"{wr.WorkoutRoutineId}:{wr.WorkoutRoutineName}:{string.Join(",", wr.Exercises.Select(e => e.ExerciseId))}"));
+        fileManager.OverwriteData("data/workoutRoutines.txt", data);
+    }
+
+    public string GenerateWorkoutRoutineId()
+    {
+        return $"workoutRoutine-{Guid.NewGuid()}";
+    }
+
+    public bool AddWorkoutRoutine(WorkoutRoutine routine) {
+        if (WorkoutRoutines.Any(r => r.WorkoutRoutineName == routine.WorkoutRoutineName)) return false;
+        WorkoutRoutines.Add(routine);
+        SaveWorkoutRoutines();
+        return true;
+    }
+
+    public bool RemoveWorkoutRoutine(string workoutRoutineId)
+    {
+        var routine = WorkoutRoutines.FirstOrDefault(r => r.WorkoutRoutineId == workoutRoutineId);
+        if (routine == null) return false;
+        WorkoutRoutines.Remove(routine);
+        SaveWorkoutRoutines();
+        return true;
+    }
 
 
 
