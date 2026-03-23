@@ -4,6 +4,7 @@ class Program
 {
     static void Main(string[] args)
     {
-        // instantiate console ui
+        var consoleUI = new ConsoleUI();
+        consoleUI.ShowMainMenu();
     }
 }
