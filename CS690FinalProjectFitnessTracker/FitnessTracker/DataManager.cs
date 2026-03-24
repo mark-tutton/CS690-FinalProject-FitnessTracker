@@ -84,12 +84,6 @@ public class DataManager
         return true;
     }
 
-    // remove user
-
-
-
-
-
 
 // exercise library methods 
     private void LoadExercises()
@@ -220,7 +214,8 @@ public class DataManager
                 {
                     var sessionId = parts[0];
                     var routine = WorkoutRoutines.FirstOrDefault(r => r.WorkoutRoutineId == parts[1]);
-                    var sessionDate = DateTime.Parse(parts[2]);
+                    var sessionDate = DateTime.ParseExact(parts[2], "yyyy-MM-dd HH-mm-ss", null);
+
                     var sessionCompleted = bool.Parse(parts[3]);
                     var notes = parts[4];
 
@@ -241,7 +236,7 @@ public class DataManager
 
     private void SaveWorkoutSessions()
     {
-        var data = string.Join(Environment.NewLine, WorkoutSessions.Select(ws => $"{ws.SessionId}:{ws.Routine.WorkoutRoutineId}:{ws.SessionDate}:{ws.IsCompleted}:{ws.Notes}"));
+        var data = string.Join(Environment.NewLine, WorkoutSessions.Select(ws => $"{ws.SessionId}:{ws.Routine.WorkoutRoutineId}:{ws.SessionDate:yyyy-MM-dd HH-mm-ss}:{ws.IsCompleted}:{ws.Notes}"));
         fileManager.OverwriteData("data/workoutSessions.txt", data);
     }
 

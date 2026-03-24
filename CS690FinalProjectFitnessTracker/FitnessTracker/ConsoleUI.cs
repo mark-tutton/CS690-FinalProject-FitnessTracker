@@ -378,9 +378,20 @@ public class ConsoleUI
                 var completionInput = Console.ReadLine()?.Trim().ToLower();
                 if (completionInput == "y")
                 {
-                        // TODO: user should be able to enter a date+time for when the session was done
+                        Console.WriteLine("Enter date/time of the workout session (mm/dd/yyyy hh:mm), or press Enter for now: ");
+                        var dateTimeInput = Console.ReadLine()?.Trim();
+                        DateTime sessionDate;
 
-                        var newSession = new WorkoutSession(dataManager.GenerateWorkoutSessionId(), DateTime.Now, selectedRoutine);
+                        if (!string.IsNullOrEmpty(dateTimeInput) && DateTime.TryParse(dateTimeInput, out DateTime parsedDate))
+                        {
+                            sessionDate = parsedDate;
+                        }
+                        else
+                        {
+                            sessionDate = DateTime.Now; 
+                        }
+
+                        var newSession = new WorkoutSession(dataManager.GenerateWorkoutSessionId(), sessionDate, selectedRoutine);
                         newSession.MarkSessionCompleted();
                         // TODO: hanlde notes input for workout session
                         
