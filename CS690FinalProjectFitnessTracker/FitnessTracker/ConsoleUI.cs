@@ -64,7 +64,7 @@ public class ConsoleUI
                     ViewWorkoutHistory();
                     break;
                 case "7":
-                    throw new NotImplementedException();
+                    Console.WriteLine("Progress and Stats feature is under development");
                     // if (dataManager.CurrentUser == null)
                     // {
                     //     Console.WriteLine("Please select or create a user first.");
@@ -140,16 +140,14 @@ public class ConsoleUI
         switch (input)
         {
             case "1":
-                // TODO: Add Exercise
                 AddExercise();
                 break;
             case "2":
                 // TODO: Remove Exercise
                 // RemoveExercise();
-                throw new NotImplementedException();
+                Console.WriteLine("Remove Exercise feature is under development");
                 break;
             case "3":
-                // TODO: View Exercises
                 ViewExercises();
                 break;
             case "4":
@@ -239,8 +237,8 @@ public class ConsoleUI
                 CreateWorkoutRoutine();
                 break;
             case "2":
-            // remove workout routine
-                throw new NotImplementedException();
+            // TODO: remove workout routine
+                Console.WriteLine("Remove Workout Routine feature is under development");
                 break;
             case "3":
                 ViewWorkoutRoutines();
