@@ -56,13 +56,12 @@ public class ConsoleUI
                     StartWorkoutRoutineMenu();
                     break;
                 case "6":
-                    throw new NotImplementedException();
-                    // if (dataManager.CurrentUser == null)
-                    // {
-                    //     Console.WriteLine("Please select or create a user first.");
-                    //     break;
-                    // }   
-                    // HistoryMenu();
+                    if (dataManager.CurrentUser == null)
+                    {
+                        Console.WriteLine("Please select or create a user first.");
+                        break;
+                    }   
+                    ViewWorkoutHistory();
                     break;
                 case "7":
                     throw new NotImplementedException();
@@ -409,4 +408,25 @@ public class ConsoleUI
                     Console.WriteLine("Invalid selection. Please try again.");
                 }
         }
+
+// Workout History
+    private void ViewWorkoutHistory()
+    {
+        var sessions = dataManager.WorkoutSessions;
+
+        if (sessions.Count == 0)
+        {
+            Console.WriteLine("No workout sessions found. Start a workout routine to record sessions.");
+            return;
+        }
+
+        Console.WriteLine("Workout History:");
+        foreach (var session in sessions)
+        {
+            Console.WriteLine($"Session ID: {session.SessionId}");
+            Console.WriteLine($"Date: {session.SessionDate}");
+            Console.WriteLine($"Routine: {session.Routine.WorkoutRoutineName}");
+            Console.WriteLine("-----------------------------------");
+        }
+    }
 }
