@@ -1,5 +1,7 @@
 namespace FitnessTracker;
 
+using Spectre.Console;
+
 
 public class ConsoleUI
 {
@@ -10,70 +12,77 @@ public class ConsoleUI
     {
         dataManager = new DataManager();
     }
-    public void ShowMainMenu()
+
+// main menu    
+      public void ShowMainMenu()
     {
         while (true)
         {
             var userDisplay = dataManager.CurrentUser != null
-                ? $"Current User: {dataManager.CurrentUser.UserName}"
-                : "No user selected";
+                ? $"[green]{dataManager.CurrentUser.UserName}[/]"
+                : "[yellow]No user selected[/]";
 
+            AnsiConsole.Clear();
 
-            Console.WriteLine("Welcome to the Fitness Tracker, " + userDisplay + "!");
-            Console.WriteLine("1. Create User");
-            Console.WriteLine("2. Select User");
-            Console.WriteLine("3. Exercises Library");
-            Console.WriteLine("4. Workout Routines Library");
-            Console.WriteLine("5. Start Workout");
-            Console.WriteLine("6. View Workout History");
-            Console.WriteLine("7. View Progress and Stats");
-            Console.WriteLine("0. Exit");
+            AnsiConsole.WriteLine();
+            var rule = new Rule("[bold blue]Fitness Tracker[/]");
+            AnsiConsole.Write(rule);
+            AnsiConsole.MarkupLine($"Welcome! {userDisplay}");
+            AnsiConsole.WriteLine();
 
-            var input = Console.ReadLine();
-            switch (input)
+            var menuChoice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[bold]Main Menu[/]")
+                    .AddChoices(
+                        "Create User",
+                        "Select User",
+                        "Exercises Library",
+                        "Workout Routines Library",
+                        "Start Workout",
+                        "View Workout History",
+                        "View Progress and Stats",
+                        "Exit"
+                    ));
+
+            switch (menuChoice)
             {
-                case "0":
-                    Console.WriteLine("Exiting the app.");
+                case "Exit":
+                    AnsiConsole.MarkupLine("[grey]Exiting the app.[/]");
                     return;
-                case "1":
+                case "Create User":
                     CreateUser();
                     break;
-                case "2":
+                case "Select User":
                     SelectUser();
                     break;
-                case "3":             
+                case "Exercises Library":
                     ExercisesLibraryMenu();
                     break;
-                case "4":
+                case "Workout Routines Library":
                     WorkoutRoutinesLibraryMenu();
                     break;
-                case "5":
+                case "Start Workout":
                     if (dataManager.CurrentUser == null)
                     {
-                        Console.WriteLine("Please select or create a user first.");
+                        AnsiConsole.MarkupLine("[red]Please select or create a user first.[/]");
+                        Console.ReadKey(true);
                         break;
-                    }   
+                    }
                     StartWorkoutRoutineMenu();
                     break;
-                case "6":
+                case "View Workout History":
                     if (dataManager.CurrentUser == null)
                     {
-                        Console.WriteLine("Please select or create a user first.");
+                        AnsiConsole.MarkupLine("[red]Please select or create a user first.[/]");
+                        Console.ReadKey(true);
                         break;
-                    }   
+                    }
                     ViewWorkoutHistory();
                     break;
-                case "7":
-                    Console.WriteLine("Progress and Stats feature is under development");
-                    // if (dataManager.CurrentUser == null)
-                    // {
-                    //     Console.WriteLine("Please select or create a user first.");
-                    //     break;
-                    // }   
-                    // ProgressStatsMenu();
-                    break;
-                default:
-                    Console.WriteLine("Invalid option. Please try again.");
+                case "View Progress and Stats":
+                    AnsiConsole.MarkupLine("[yellow]Progress and Stats feature is under development.[/]");
+                    AnsiConsole.MarkupLine("[grey]Press any key to return to the main menu.[/]");
+                    Console.ReadKey(true);
                     break;
             }
         }
