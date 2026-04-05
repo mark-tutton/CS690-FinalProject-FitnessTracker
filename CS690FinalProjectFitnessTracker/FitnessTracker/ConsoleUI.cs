@@ -131,33 +131,34 @@ public class ConsoleUI
     // exercise library menu 
     private void ExercisesLibraryMenu()
     {
-        Console.WriteLine("Exercises Library");
-        Console.WriteLine("1. Add Exercise");
-        Console.WriteLine("2. Remove Exercise");
-        Console.WriteLine("3. View Exercises");
-        Console.WriteLine("4. Back to Main Menu");
+        var exerciseLibraryMenuChoice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[bold]Exercises Library[/]")
+                .AddChoices(
+                    "Add Exercise",
+                     "Remove Exercise",
+                     "View Exercises",
+                     "Back"
+                ));
 
-        var input = Console.ReadLine();
-        switch (input)
+        switch (exerciseLibraryMenuChoice)
         {
-            case "1":
+            case "Add Exercise":
                 AddExercise();
                 break;
-            case "2":
-                // TODO: Remove Exercise
+            case "Remove Exercise":
+                // TODO: Remove Exercise 
                 // RemoveExercise();
-                Console.WriteLine("Remove Exercise feature is under development");
+                AnsiConsole.MarkupLine("[yellow]Remove Exercise feature is under development.[/]");
                 break;
-            case "3":
+            case "View Exercises":
                 ViewExercises();
                 break;
-            case "4":
+            case "Back":
                 return;
-            default:
-                Console.WriteLine("Invalid option. Please try again.");
-                break;
         }
     }
+
 
     // exercise library methods 
 
