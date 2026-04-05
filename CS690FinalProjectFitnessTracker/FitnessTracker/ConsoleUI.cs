@@ -228,33 +228,33 @@ public class ConsoleUI
 // workout routines library menu
     public void WorkoutRoutinesLibraryMenu()
     {
-        Console.WriteLine("Workout Routines Library");
-        Console.WriteLine("1. Create Workout Routine");
-        Console.WriteLine("2. Remove Workout Routine");
-        Console.WriteLine("3. View Workout Routines");
-        Console.WriteLine("4. Back to Main Menu");
+        var workoutRoutineLibraryMenuChoice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[bold]Workout Routines Library[/]")
+                .AddChoices(
+                    "Create Workout Routine",
+                    "Remove Workout Routine",
+                    "View Workout Routines",
+                    "Back"
+                )
+        );
 
-        var input = Console.ReadLine();
-        switch (input)
+        switch (workoutRoutineLibraryMenuChoice)
         {
-            case "1":
+            case "Create Workout Routine":
                 CreateWorkoutRoutine();
                 break;
-            case "2":
-            // TODO: remove workout routine
-                Console.WriteLine("Remove Workout Routine feature is under development");
+            case "Remove Workout Rountine":
+                // RemoveWorkoutRoutine();
+                AnsiConsole.MarkupLine("[yellow]Remove Workout Routine feature is under development");
                 break;
-            case "3":
+            case "View Workout Routines":
                 ViewWorkoutRoutines();
                 break;
-            case "4":
+            case "Back":
                 return;
-            default:
-                Console.WriteLine("Invalid option. Please try again.");
-                break;
         }
     }
-
 
 // workout routines library methods
     private void CreateWorkoutRoutine()
