@@ -113,25 +113,18 @@ public class ConsoleUI
     {
         if (dataManager.Users.Count == 0)
         {
-            Console.WriteLine("No users found. Please create a user first.");
+            AnsiConsole.MarkupLine("[red]No users found. Please create a user first.[/]");
             return;
         }
 
-        Console.WriteLine("Select a user:");
-        for (int i = 0; i < dataManager.Users.Count; i++)
-        {
-            Console.WriteLine($"{i + 1}. {dataManager.Users[i].UserName}");
-        }
+        var selectedUser = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Select a user:")
+                .AddChoices(dataManager.Users.Select(u => u.UserName)));
 
-        if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 1 && choice <= dataManager.Users.Count)
-        {
-            dataManager.SetCurrentUser(dataManager.Users[choice - 1]);
-            Console.WriteLine($"Selected User {dataManager.CurrentUser.UserName}.");
-        }
-        else
-        {
-            Console.WriteLine("Invalid selection. Please try again.");
-        }
+        var user = dataManager.Users.First(u => u.UserName == selectedUser);
+        dataManager.SetCurrentUser(user);
+        AnsiConsole.MarkupLine($"Selected User: {user.UserName}");
     }
 
 
