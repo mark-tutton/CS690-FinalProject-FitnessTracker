@@ -131,6 +131,7 @@ public class ConsoleUI
     // exercise library menu 
     private void ExercisesLibraryMenu()
     {
+        while (true) {
         var exerciseLibraryMenuChoice = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .Title("[bold]Exercises Library[/]")
@@ -157,71 +158,72 @@ public class ConsoleUI
             case "Back":
                 return;
         }
+        }
     }
 
 
     // exercise library methods 
-
     private void AddExercise()
     {
-        Console.WriteLine("Enter Exercise Name: ");
-        var exerciseName = Console.ReadLine()?.Trim();
-
-        // validate exercise name input
+        var exerciseName = AnsiConsole.Ask<string>("Enter [green]Exercise Name[/]:");
         if (string.IsNullOrEmpty(exerciseName))
         {
-            Console.WriteLine("Exercise Name cannot be empty. Please try again.");
+            AnsiConsole.MarkupLine("[red]Exercise Name cannot be empty.[/]");
             return;
         }
-     
 
-        Console.WriteLine("Enter Exercise Description: "); // this could contain info like sets/reps/duration etc. TODO: add instructions for this input
-        var exerciseDescription = Console.ReadLine()?.Trim();
-
-        // validate exercise description input
+        // TODO: refactor to include info input (sets, reps, durtion, etc)
+        var exerciseDescription = AnsiConsole.Ask<string>("Enter [green]Exercise Description[/]:");
         if (string.IsNullOrEmpty(exerciseDescription))
         {
-            Console.WriteLine("Exercise Description cannot be empty. Please try again.");
+            AnsiConsole.MarkupLine("[red]Exercise Description cannot be empty.[/]");
             return;
         }
 
-        Console.Write("Enter Exercise Type (0.Cardio, 1.Strength, 2.Flexibility, 3.Balance): ");
+        var exTypeChoice = AnsiConsole.Prompt(
+            new SelectionPrompt<ExerciseType>()
+                .Title("Select [green]Exercise Type[/]:")
+                .AddChoices(Enum.GetValues<ExerciseType>()));
 
-        var exerciseTypeInput = Console.ReadLine()?.Trim();
-        if (!int.TryParse(exerciseTypeInput, out int exTypeChoice) || !Enum.IsDefined(typeof(ExerciseType), exTypeChoice))
-        {
-            Console.WriteLine("Invalid Exercise Type selection. Please try again.");
-            return;
-        }
-        var selectedExType = (ExerciseType)exTypeChoice;
-
-        // create exercise and save to data manager
-        var newExercise = new Exercise(dataManager.GenerateExerciseId(), exerciseName, exerciseDescription, selectedExType);
+        var newExercise = new Exercise(dataManager.GenerateExerciseId(), exerciseName, exerciseDescription, exTypeChoice);
         if (!dataManager.AddExercise(newExercise))
         {
-            Console.WriteLine("Exercise name already exists. Please try again.");
+            AnsiConsole.MarkupLine("[red]Exercise name already exists. Please try again.[/]");
             return;
         }
 
-        Console.WriteLine($"Exercise {exerciseName} added successfully!");
+        AnsiConsole.MarkupLine($"[green]Exercise '{exerciseName}' added successfully![/]");
     }
 
     private void ViewExercises()
     {
         if (dataManager.ExerciseLibrary.Count == 0)
         {
-            Console.WriteLine("No exercises found. Please add exercises first.");
+            AnsiConsole.MarkupLine("[red]No exercises found. Please add exercises first.[/]");
             return;
         }
 
-        Console.WriteLine("Exercises Library:");
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .Title("[bold]Exercises Library[/]")
+            .AddColumn("ID")
+            .AddColumn("Name")
+            .AddColumn("Type")
+            .AddColumn("Description");
+
         foreach (var exercise in dataManager.ExerciseLibrary)
         {
-            Console.WriteLine($"ID: {exercise.ExerciseId}, Name: {exercise.ExerciseName}, Type: {exercise.ExType}");
-            Console.WriteLine($"Description: {exercise.ExerciseDescription}");
-            Console.WriteLine("-----------------------------------");
+            table.AddRow(
+                exercise.ExerciseId.ToString(),
+                exercise.ExerciseName,
+                exercise.ExType.ToString(),
+                exercise.ExerciseDescription
+            );
         }
+
+        AnsiConsole.Write(table);
     }
+
 
 // workout routines library menu
     public void WorkoutRoutinesLibraryMenu()
