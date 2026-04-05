@@ -91,23 +91,22 @@ public class ConsoleUI
 // user methods 
     private void CreateUser()
     {
-        Console.WriteLine("Enter User Name: ");
-        var userName = Console.ReadLine();
+        var userName = AnsiConsole.Ask<string>("Enter [green] User Name:[/]");
 
         if (string.IsNullOrEmpty(userName))
         {
-            Console.WriteLine("User Name cannot be empty. Please try again.");
+            AnsiConsole.MarkupLine("[red]User Name cannot be empty. Please try again.[/]");
             return;
         }
 
         if (!dataManager.AddUser(dataManager.GenerateUserId(), userName))
         {
-            Console.WriteLine("User name already exists. Please try again.");
+            AnsiConsole.MarkupLine("[red]User name already exists. Please try again.[/]");
             return;
         }
       
         dataManager.SetCurrentUser(dataManager.Users.Last());
-        Console.WriteLine($"User {userName} created and selected.");
+        AnsiConsole.MarkupLine($"User {userName} created and selected.");
     }
 
     private void SelectUser()
