@@ -80,9 +80,7 @@ public class ConsoleUI
                     ViewWorkoutHistory();
                     break;
                 case "View Progress and Stats":
-                    AnsiConsole.MarkupLine("[yellow]Progress and Stats feature is under development.[/]");
-                    AnsiConsole.MarkupLine("[grey]Press any key to return to the main menu.[/]");
-                    Console.ReadKey(true);
+                    // ViewProgressAndStats();
                     break;
             }
         }
@@ -419,9 +417,34 @@ public class ConsoleUI
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine($"[blue]{exercise.ExerciseName}[/] [grey]({exercise.ExType})[/]");
             AnsiConsole.MarkupLine($"  [grey]Prescribed: {exercise.ExerciseDescription}[/]");
-            var log = AnsiConsole.Prompt(
-                new TextPrompt<string>("  Enter Actual amount done (enter to accept the prescribed amount):")
-                    .DefaultValue(exercise.ExerciseDescription));
+            
+            string log;
+            switch (exercise.ExType)
+            {
+                case ExerciseType.Strength:
+                    var sets = AnsiConsole.Ask<int>("  Enter number of [green]sets completed[/]:");
+                    var reps = AnsiConsole.Ask<int>("  Enter number of [green]reps completed[/]:");
+                    log = $"sets={sets},reps={reps}";
+                    break;
+                case ExerciseType.Cardio:
+                    var miles = AnsiConsole.Ask<double>("  Distance (miles):");
+                    var min = AnsiConsole.Ask<double>("  Duration (min):");
+                    log = $"miles={miles},min={min}";
+                    if (exercise.ExerciseDescription.Contains(" | "))
+                    {
+                        var intervalSets = AnsiConsole.Ask<int>("  Interval sets:");
+                        var intervalReps = AnsiConsole.Ask<int>("  Reps per set:");
+                        log += $",sets={intervalSets},reps={intervalReps}";
+                    }
+                    break;
+                case ExerciseType.Flexibility:
+                case ExerciseType.Balance:
+                    log = AnsiConsole.Ask<string>("  Enter duration[/] (e.g. 15 mins):");
+                    break;
+                default:
+                    log = AnsiConsole.Ask<string>("  Notes:");
+                    break;
+            }
             exerciseLogs.Add($"{exercise.ExerciseName}: {log}");
         }
                     
