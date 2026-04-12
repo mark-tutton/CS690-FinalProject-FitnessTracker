@@ -397,86 +397,90 @@ public class ConsoleUI
 
 // start workout routine menu
     private void StartWorkoutRoutineMenu()
+    {
+        if (dataManager.WorkoutRoutines.Count == 0)
         {
-            if (dataManager.WorkoutRoutines.Count == 0)
-            {
-                Console.WriteLine("No workout routines found. Create a workout routine first.");
-                return;
-            } 
+            AnsiConsole.MarkupLine("[red]No workout routines found. Create a workout routine first.[/]");
+            return;
+        } 
 
-            Console.WriteLine("Select a Workout Routine:");
-            for (int i = 0; i < dataManager.WorkoutRoutines.Count; i++)
-            {
-                var routine = dataManager.WorkoutRoutines[i];
-                Console.WriteLine($"{i + 1}. {routine.WorkoutRoutineName} ({routine.Exercises.Count} exercises)");
-            }
+        var routineChoice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Select a workout routine:")
+                .AddChoices(dataManager.WorkoutRoutines.Select(r => $"{r.WorkoutRoutineName} ({r.Exercises.Count} exercises)")));
+        
+        var selectedRoutine = dataManager.WorkoutRoutines.First(r => $"{r.WorkoutRoutineName} ({r.Exercises.Count} exercises)" == routineChoice);
 
-            if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 1 && choice <= dataManager.WorkoutRoutines.Count)
-            {
-                var selectedRoutine = dataManager.WorkoutRoutines[choice - 1];
-                dataManager.SetCurrentWorkoutRoutine(selectedRoutine);
-                Console.WriteLine($"Selected Workout Routine: {selectedRoutine.WorkoutRoutineName}");
+        dataManager.SetCurrentWorkoutRoutine(selectedRoutine);
 
-                Console.WriteLine("Exercises in this routine: ");
-                foreach (var exercise in selectedRoutine.Exercises)
-                {
-                    Console.WriteLine($"- {exercise.ExerciseName} ({exercise.ExType})");
-                }
-
-                Console.Write("Mark this routine as completed? (y/n): ");
-                var completionInput = Console.ReadLine()?.Trim().ToLower();
-                if (completionInput == "y")
-                {
-                        Console.WriteLine("Enter date/time of the workout session (mm/dd/yyyy hh:mm), or press Enter for now: ");
-                        var dateTimeInput = Console.ReadLine()?.Trim();
-                        DateTime sessionDate;
-
-                        if (!string.IsNullOrEmpty(dateTimeInput) && DateTime.TryParse(dateTimeInput, out DateTime parsedDate))
-                        {
-                            sessionDate = parsedDate;
-                        }
-                        else
-                        {
-                            sessionDate = DateTime.Now; 
-                        }
-
-                        var newSession = new WorkoutSession(dataManager.GenerateWorkoutSessionId(), sessionDate, selectedRoutine);
-                        newSession.MarkSessionCompleted();
-                        // TODO: hanlde notes input for workout session
-                        
-
-                        dataManager.AddWorkoutSession(newSession);
-                        Console.WriteLine("Workout session recorded as completed!");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Workout session not recorded.");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Invalid selection. Please try again.");
-                }
+        var exerciseLogs = new List<string>();
+        foreach (var exercise in selectedRoutine.Exercises.Where(e => e != null))
+        {
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine($"[blue]{exercise.ExerciseName}[/] [grey]({exercise.ExType})[/]");
+            AnsiConsole.MarkupLine($"  [grey]Prescribed: {exercise.ExerciseDescription}[/]");
+            var log = AnsiConsole.Prompt(
+                new TextPrompt<string>("  Enter Actual amount done (enter to accept the prescribed amount):")
+                    .DefaultValue(exercise.ExerciseDescription));
+            exerciseLogs.Add($"{exercise.ExerciseName}: {log}");
         }
+                    
+        if (!AnsiConsole.Confirm("\nMark this routine as [green]completed[/]?"))
+        {
+            AnsiConsole.MarkupLine("[grey]Workout session not recorded.[/]");
+            return;
+        }
+
+
+        var dateInput = AnsiConsole.Prompt(
+        new TextPrompt<string>("Enter [green]date/time[/] (mm/dd/yyyy hh:mm) or leave blank for now:")
+            .AllowEmpty());
+
+        var sessionDate = !string.IsNullOrEmpty(dateInput) && DateTime.TryParse(dateInput, out var parsed)
+            ? parsed
+            : DateTime.Now;
+
+        var newSession = new WorkoutSession(dataManager.GenerateWorkoutSessionId(), sessionDate, selectedRoutine);
+        newSession.MarkSessionCompleted();
+        newSession.AddNotes(string.Join("; ", exerciseLogs));
+        dataManager.AddWorkoutSession(newSession);
+
+        AnsiConsole.MarkupLine("[green]Workout session recorded as completed![/]");
+    }
+
 
 // Workout History
     private void ViewWorkoutHistory()
     {
-        var sessions = dataManager.WorkoutSessions;
-
-        if (sessions.Count == 0)
+        if (dataManager.WorkoutSessions.Count == 0)
         {
-            Console.WriteLine("No workout sessions found. Start a workout routine to record sessions.");
+            AnsiConsole.MarkupLine("[red]No workout sessions found. Start a workout routine to record sessions.[/]");
+            Console.ReadKey(true);
             return;
         }
 
-        Console.WriteLine("Workout History:");
-        foreach (var session in sessions)
+        foreach (var session in dataManager.WorkoutSessions)
         {
-            Console.WriteLine($"Session ID: {session.SessionId}");
-            Console.WriteLine($"Date: {session.SessionDate}");
-            Console.WriteLine($"Routine: {session.Routine.WorkoutRoutineName}");
-            Console.WriteLine("-----------------------------------");
+
+         var noteLines = session.Notes?.Split("; ") ?? Array.Empty<string>();
+         var notesMarkup = noteLines.Length > 0
+             ? new Rows(noteLines.Select(n => new Markup($"  • {n}")))
+             : new Rows(new Markup("[grey]No exercise data logged.[/]"));
+
+         var panel = new Panel(
+             new Rows(
+                 new Markup($"[bold]Date:[/] {session.SessionDate:MM/dd/yyyy h:mm tt}"),
+                 new Markup($"[bold]Completed:[/] {(session.IsCompleted ? "[green]Yes[/]" : "[red]No[/]")}"),
+                 new Markup("[bold]Exercises:[/]"),
+                 notesMarkup
+             ))
+             .Header($"[blue]{session.Routine.WorkoutRoutineName}[/]")
+             .Border(BoxBorder.Rounded);
+
+         AnsiConsole.Write(panel);
         }
+
+        AnsiConsole.MarkupLine("[grey]Press any key to return to the main menu.[/]");
+        Console.ReadKey(true);
     }
 }
