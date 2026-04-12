@@ -148,9 +148,7 @@ public class ConsoleUI
                 AddExercise();
                 break;
             case "Remove Exercise":
-                // TODO: Remove Exercise 
-                // RemoveExercise();
-                AnsiConsole.MarkupLine("[yellow]Remove Exercise feature is under development.[/]");
+                RemoveExercise();
                 break;
             case "View Exercises":
                 ViewExercises();
@@ -195,6 +193,30 @@ public class ConsoleUI
         AnsiConsole.MarkupLine($"[green]Exercise '{exerciseName}' added successfully![/]");
     }
 
+    private void RemoveExercise()
+    {
+        if (dataManager.ExerciseLibrary.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[red]No exercises found. Please add exercises first.[/]");
+            return;
+        }
+
+        var exerciseToRemove = AnsiConsole.Prompt(
+            new SelectionPrompt<string>() 
+            .Title("Select an exercise to remove:")
+            .AddChoices(dataManager.ExerciseLibrary.Select(e => $"{e.ExerciseName} ({e.ExType})")));
+        
+        var exercise = dataManager.ExerciseLibrary.First(e => $"{e.ExerciseName} ({e.ExType})" == exerciseToRemove);
+
+        if (dataManager.RemoveExercise(exercise.ExerciseId))
+        {
+            AnsiConsole.MarkupLine($"[green]Exercise '{exercise.ExerciseName}' removed successfully![/]");
+        }
+        else
+        {
+            AnsiConsole.MarkupLine("[red]Failed to remove exercise. Please try again.[/]");
+        }
+    }
     private void ViewExercises()
     {
         if (dataManager.ExerciseLibrary.Count == 0)
