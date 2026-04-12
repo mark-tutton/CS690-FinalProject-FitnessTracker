@@ -170,18 +170,43 @@ public class ConsoleUI
             return;
         }
 
-        // TODO: refactor to include info input (sets, reps, durtion, etc)
-        var exerciseDescription = AnsiConsole.Ask<string>("Enter [green]Exercise Description[/]:");
-        if (string.IsNullOrEmpty(exerciseDescription))
-        {
-            AnsiConsole.MarkupLine("[red]Exercise Description cannot be empty.[/]");
-            return;
-        }
-
         var exTypeChoice = AnsiConsole.Prompt(
             new SelectionPrompt<ExerciseType>()
                 .Title("Select [green]Exercise Type[/]:")
                 .AddChoices(Enum.GetValues<ExerciseType>()));
+
+        string exerciseDescription;
+
+        switch (exTypeChoice)
+        {
+            case ExerciseType.Strength:
+            var sets = AnsiConsole.Ask<int>("Enter number of [green]sets[/]:");
+            var reps = AnsiConsole.Ask<int>("Enter number of [green]reps[/]:");
+            exerciseDescription = $"{sets} sets x {reps} reps";
+            break;
+
+            case ExerciseType.Cardio:
+                var distance = AnsiConsole.Ask<string>("Enter [green]distance[/] (e.g. 20 miles):");
+                var duration = AnsiConsole.Ask<string>("Enter [green]duration[/] (e.g. 60 mins):");
+                exerciseDescription = $"{distance} / {duration}";
+                if (AnsiConsole.Confirm("Is this an interval workout?"))
+                {
+                    var intervalSets = AnsiConsole.Ask<int>("Enter number of interval [green]sets[/]:");
+                    var intervalReps = AnsiConsole.Ask<int>("Enter [green]reps[/] per set:");
+                    exerciseDescription += $" | {intervalSets} sets x {intervalReps} reps";
+                }
+                break;
+
+            case ExerciseType.Flexibility:
+            case ExerciseType.Balance:
+                var flexDuration = AnsiConsole.Ask<string>("Enter [green]duration[/] (e.g. 15 min):");
+                exerciseDescription = flexDuration;
+                break;
+
+            default:
+                exerciseDescription = AnsiConsole.Ask<string>("Enter [green]Exercise Description[/]:");
+                break;
+        }
 
         var newExercise = new Exercise(dataManager.GenerateExerciseId(), exerciseName, exerciseDescription, exTypeChoice);
         if (!dataManager.AddExercise(newExercise))
