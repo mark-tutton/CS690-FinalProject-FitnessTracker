@@ -80,7 +80,7 @@ public class ConsoleUI
                     ViewWorkoutHistory();
                     break;
                 case "View Progress and Stats":
-                    // ViewProgressAndStats();
+                    ViewProgressAndStats();
                     break;
             }
         }
@@ -506,4 +506,78 @@ public class ConsoleUI
         AnsiConsole.MarkupLine("[grey]Press any key to return to the main menu.[/]");
         Console.ReadKey(true);
     }
+
+    
+// Progress and Stats
+    private void ViewProgressAndStats()
+    {
+        if (dataManager.WorkoutSessions.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[red]No workout sessions found. Start a workout routine to record sessions.[/]");
+            Console.ReadKey(true);
+            return;
+        }
+
+        // group by routine name and aggreagte stats
+        var routineGroups = dataManager.WorkoutSessions
+            .GroupBy(session => session.Routine.WorkoutRoutineName);
+
+        foreach (var group in routineGroups)
+        {
+            var sessions = group.ToList();
+            int totalSets = 0;
+            int totalReps = 0;
+            double totalMinutes = 0;
+            double totalDistance = 0;
+
+
+            foreach (var session in sessions)
+            {
+                if (string.IsNullOrEmpty(session.Notes)) continue;
+
+                // notes are stored like: "Bench Press: sets=3,reps=10; Squats: sets=4,reps=12; Running: miles=2,min=30"
+                foreach (var entry in session.Notes.Split("; "))
+                {
+                    //ignore the ExerciseName and parse the key=value pairs after ": "
+                    var seperatorIndex = entry.IndexOf(": ");
+                    if (seperatorIndex < 0) continue;
+
+                    foreach (var keyValuePair in entry[(seperatorIndex + 2)..].Split(","))
+                    {
+                        var keyValue = keyValuePair.Split("=");
+
+                        if (keyValue.Length != 2 || !double.TryParse(keyValue[1], out double val)) continue;
+                        switch (keyValue[0])
+                        {
+                            case "sets": totalSets  += (int)val; break;
+                            case "reps": totalReps  += (int)val; break;
+                            case "min": totalMinutes  += val; break;
+                            case "miles": totalDistance += val; break;
+                        }
+                    }
+                }
+            }
+
+            int sessionCount = sessions.Count;
+            var statsTable = new Table()
+                .Border(TableBorder.Rounded)
+                .Title($"[bold blue]{group.Key}[/]")
+                .AddColumn("Stat")
+                .AddColumn("[bold]Total[/]")
+                .AddColumn("[bold]Avg per Session[/]");
+
+            statsTable.AddRow("Sessions", sessionCount.ToString(), "-");
+            if (totalSets > 0) statsTable.AddRow("Sets", totalSets.ToString(), $"{(double)totalSets / sessionCount:F1}");
+            if (totalReps > 0) statsTable.AddRow("Reps", totalReps.ToString(), $"{(double)totalReps / sessionCount:F1}");
+            if (totalMinutes > 0) statsTable.AddRow("Minutes", totalMinutes.ToString(), $"{(double)totalMinutes / sessionCount:F1}");
+            if (totalDistance > 0) statsTable.AddRow("Distance", totalDistance.ToString(), $"{(double)totalDistance / sessionCount:F1}");
+
+            AnsiConsole.Write(statsTable);
+            AnsiConsole.WriteLine();
+        }
+
+        AnsiConsole.MarkupLine("[grey]Press any key to return to the main menu.[/]");
+        Console.ReadKey(true);
+    }
+
 }
