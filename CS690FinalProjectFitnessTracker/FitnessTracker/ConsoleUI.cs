@@ -268,9 +268,8 @@ public class ConsoleUI
                 case "Create Workout Routine":
                     CreateWorkoutRoutine();
                     break;
-                case "Remove Workout Rountine":
-                    // RemoveWorkoutRoutine();
-                    AnsiConsole.MarkupLine("[yellow]Remove Workout Routine feature is under development");
+                case "Remove Workout Routine":
+                    RemoveWorkoutRoutine();
                     break;
                 case "View Workout Routines":
                     ViewWorkoutRoutines();
@@ -316,6 +315,31 @@ public class ConsoleUI
         AnsiConsole.MarkupLine($"[green]Workout Routine '{routineName}' created.[/]");
     }
  
+
+    private void RemoveWorkoutRoutine()
+    {
+        if (dataManager.WorkoutRoutines.Count == 0)
+        {
+            AnsiConsole.MarkupLine("[red]No workout routines found. Please create a workout routine first.[/]");
+            return;
+        }
+
+        var routineToRemove = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Select a workout routine to remove:")
+                .AddChoices(dataManager.WorkoutRoutines.Select(r => r.WorkoutRoutineName)));
+
+        var routine = dataManager.WorkoutRoutines.First(r => r.WorkoutRoutineName == routineToRemove);
+
+        if (dataManager.RemoveWorkoutRoutine(routine.WorkoutRoutineId))
+        {
+            AnsiConsole.MarkupLine($"[green]Workout Routine '{routine.WorkoutRoutineName}' removed successfully![/]");
+        }
+        else
+        {
+            AnsiConsole.MarkupLine("[red]Failed to remove workout routine. Please try again.[/]");
+        }
+    }
     private void ViewWorkoutRoutines()
     {
         if (dataManager.WorkoutRoutines.Count == 0)
