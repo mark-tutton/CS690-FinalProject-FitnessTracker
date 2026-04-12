@@ -1,5 +1,7 @@
 namespace FitnessTracker;
 
+using Spectre.Console;
+
 
 public class ConsoleUI
 {
@@ -10,70 +12,77 @@ public class ConsoleUI
     {
         dataManager = new DataManager();
     }
-    public void ShowMainMenu()
+
+// main menu    
+      public void ShowMainMenu()
     {
         while (true)
         {
             var userDisplay = dataManager.CurrentUser != null
-                ? $"Current User: {dataManager.CurrentUser.UserName}"
-                : "No user selected";
+                ? $"[green]{dataManager.CurrentUser.UserName}[/]"
+                : "[yellow]No user selected[/]";
 
+            AnsiConsole.Clear();
 
-            Console.WriteLine("Welcome to the Fitness Tracker, " + userDisplay + "!");
-            Console.WriteLine("1. Create User");
-            Console.WriteLine("2. Select User");
-            Console.WriteLine("3. Exercises Library");
-            Console.WriteLine("4. Workout Routines Library");
-            Console.WriteLine("5. Start Workout");
-            Console.WriteLine("6. View Workout History");
-            Console.WriteLine("7. View Progress and Stats");
-            Console.WriteLine("0. Exit");
+            AnsiConsole.WriteLine();
+            var rule = new Rule("[bold blue]Fitness Tracker[/]");
+            AnsiConsole.Write(rule);
+            AnsiConsole.MarkupLine($"Welcome! {userDisplay}");
+            AnsiConsole.WriteLine();
 
-            var input = Console.ReadLine();
-            switch (input)
+            var menuChoice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[bold]Main Menu[/]")
+                    .AddChoices(
+                        "Create User",
+                        "Select User",
+                        "Exercises Library",
+                        "Workout Routines Library",
+                        "Start Workout",
+                        "View Workout History",
+                        "View Progress and Stats",
+                        "Exit"
+                    ));
+
+            switch (menuChoice)
             {
-                case "0":
-                    Console.WriteLine("Exiting the app.");
+                case "Exit":
+                    AnsiConsole.MarkupLine("[grey]Exiting the app.[/]");
                     return;
-                case "1":
+                case "Create User":
                     CreateUser();
                     break;
-                case "2":
+                case "Select User":
                     SelectUser();
                     break;
-                case "3":             
+                case "Exercises Library":
                     ExercisesLibraryMenu();
                     break;
-                case "4":
+                case "Workout Routines Library":
                     WorkoutRoutinesLibraryMenu();
                     break;
-                case "5":
+                case "Start Workout":
                     if (dataManager.CurrentUser == null)
                     {
-                        Console.WriteLine("Please select or create a user first.");
+                        AnsiConsole.MarkupLine("[red]Please select or create a user first.[/]");
+                        Console.ReadKey(true);
                         break;
-                    }   
+                    }
                     StartWorkoutRoutineMenu();
                     break;
-                case "6":
+                case "View Workout History":
                     if (dataManager.CurrentUser == null)
                     {
-                        Console.WriteLine("Please select or create a user first.");
+                        AnsiConsole.MarkupLine("[red]Please select or create a user first.[/]");
+                        Console.ReadKey(true);
                         break;
-                    }   
+                    }
                     ViewWorkoutHistory();
                     break;
-                case "7":
-                    Console.WriteLine("Progress and Stats feature is under development");
-                    // if (dataManager.CurrentUser == null)
-                    // {
-                    //     Console.WriteLine("Please select or create a user first.");
-                    //     break;
-                    // }   
-                    // ProgressStatsMenu();
-                    break;
-                default:
-                    Console.WriteLine("Invalid option. Please try again.");
+                case "View Progress and Stats":
+                    AnsiConsole.MarkupLine("[yellow]Progress and Stats feature is under development.[/]");
+                    AnsiConsole.MarkupLine("[grey]Press any key to return to the main menu.[/]");
+                    Console.ReadKey(true);
                     break;
             }
         }
@@ -82,265 +91,237 @@ public class ConsoleUI
 // user methods 
     private void CreateUser()
     {
-        Console.WriteLine("Enter User Name: ");
-        var userName = Console.ReadLine();
+        var userName = AnsiConsole.Ask<string>("Enter [green] User Name:[/]");
 
         if (string.IsNullOrEmpty(userName))
         {
-            Console.WriteLine("User Name cannot be empty. Please try again.");
+            AnsiConsole.MarkupLine("[red]User Name cannot be empty. Please try again.[/]");
             return;
         }
 
         if (!dataManager.AddUser(dataManager.GenerateUserId(), userName))
         {
-            Console.WriteLine("User name already exists. Please try again.");
+            AnsiConsole.MarkupLine("[red]User name already exists. Please try again.[/]");
             return;
         }
       
         dataManager.SetCurrentUser(dataManager.Users.Last());
-        Console.WriteLine($"User {userName} created and selected.");
+        AnsiConsole.MarkupLine($"User {userName} created and selected.");
     }
 
     private void SelectUser()
     {
         if (dataManager.Users.Count == 0)
         {
-            Console.WriteLine("No users found. Please create a user first.");
+            AnsiConsole.MarkupLine("[red]No users found. Please create a user first.[/]");
             return;
         }
 
-        Console.WriteLine("Select a user:");
-        for (int i = 0; i < dataManager.Users.Count; i++)
-        {
-            Console.WriteLine($"{i + 1}. {dataManager.Users[i].UserName}");
-        }
+        var selectedUser = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Select a user:")
+                .AddChoices(dataManager.Users.Select(u => u.UserName)));
 
-        if (int.TryParse(Console.ReadLine(), out int choice) && choice >= 1 && choice <= dataManager.Users.Count)
-        {
-            dataManager.SetCurrentUser(dataManager.Users[choice - 1]);
-            Console.WriteLine($"Selected User {dataManager.CurrentUser.UserName}.");
-        }
-        else
-        {
-            Console.WriteLine("Invalid selection. Please try again.");
-        }
+        var user = dataManager.Users.First(u => u.UserName == selectedUser);
+        dataManager.SetCurrentUser(user);
+        AnsiConsole.MarkupLine($"Selected User: {user.UserName}");
     }
 
 
     // exercise library menu 
     private void ExercisesLibraryMenu()
     {
-        Console.WriteLine("Exercises Library");
-        Console.WriteLine("1. Add Exercise");
-        Console.WriteLine("2. Remove Exercise");
-        Console.WriteLine("3. View Exercises");
-        Console.WriteLine("4. Back to Main Menu");
+        while (true) {
+        var exerciseLibraryMenuChoice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[bold]Exercises Library[/]")
+                .AddChoices(
+                    "Add Exercise",
+                     "Remove Exercise",
+                     "View Exercises",
+                     "Back"
+                ));
 
-        var input = Console.ReadLine();
-        switch (input)
+        switch (exerciseLibraryMenuChoice)
         {
-            case "1":
+            case "Add Exercise":
                 AddExercise();
                 break;
-            case "2":
-                // TODO: Remove Exercise
+            case "Remove Exercise":
+                // TODO: Remove Exercise 
                 // RemoveExercise();
-                Console.WriteLine("Remove Exercise feature is under development");
+                AnsiConsole.MarkupLine("[yellow]Remove Exercise feature is under development.[/]");
                 break;
-            case "3":
+            case "View Exercises":
                 ViewExercises();
                 break;
-            case "4":
+            case "Back":
                 return;
-            default:
-                Console.WriteLine("Invalid option. Please try again.");
-                break;
+        }
         }
     }
 
-    // exercise library methods 
 
+    // exercise library methods 
     private void AddExercise()
     {
-        Console.WriteLine("Enter Exercise Name: ");
-        var exerciseName = Console.ReadLine()?.Trim();
-
-        // validate exercise name input
+        var exerciseName = AnsiConsole.Ask<string>("Enter [green]Exercise Name[/]:");
         if (string.IsNullOrEmpty(exerciseName))
         {
-            Console.WriteLine("Exercise Name cannot be empty. Please try again.");
+            AnsiConsole.MarkupLine("[red]Exercise Name cannot be empty.[/]");
             return;
         }
-     
 
-        Console.WriteLine("Enter Exercise Description: "); // this could contain info like sets/reps/duration etc. TODO: add instructions for this input
-        var exerciseDescription = Console.ReadLine()?.Trim();
-
-        // validate exercise description input
+        // TODO: refactor to include info input (sets, reps, durtion, etc)
+        var exerciseDescription = AnsiConsole.Ask<string>("Enter [green]Exercise Description[/]:");
         if (string.IsNullOrEmpty(exerciseDescription))
         {
-            Console.WriteLine("Exercise Description cannot be empty. Please try again.");
+            AnsiConsole.MarkupLine("[red]Exercise Description cannot be empty.[/]");
             return;
         }
 
-        Console.Write("Enter Exercise Type (0.Cardio, 1.Strength, 2.Flexibility, 3.Balance): ");
+        var exTypeChoice = AnsiConsole.Prompt(
+            new SelectionPrompt<ExerciseType>()
+                .Title("Select [green]Exercise Type[/]:")
+                .AddChoices(Enum.GetValues<ExerciseType>()));
 
-        var exerciseTypeInput = Console.ReadLine()?.Trim();
-        if (!int.TryParse(exerciseTypeInput, out int exTypeChoice) || !Enum.IsDefined(typeof(ExerciseType), exTypeChoice))
-        {
-            Console.WriteLine("Invalid Exercise Type selection. Please try again.");
-            return;
-        }
-        var selectedExType = (ExerciseType)exTypeChoice;
-
-        // create exercise and save to data manager
-        var newExercise = new Exercise(dataManager.GenerateExerciseId(), exerciseName, exerciseDescription, selectedExType);
+        var newExercise = new Exercise(dataManager.GenerateExerciseId(), exerciseName, exerciseDescription, exTypeChoice);
         if (!dataManager.AddExercise(newExercise))
         {
-            Console.WriteLine("Exercise name already exists. Please try again.");
+            AnsiConsole.MarkupLine("[red]Exercise name already exists. Please try again.[/]");
             return;
         }
 
-        Console.WriteLine($"Exercise {exerciseName} added successfully!");
+        AnsiConsole.MarkupLine($"[green]Exercise '{exerciseName}' added successfully![/]");
     }
 
     private void ViewExercises()
     {
         if (dataManager.ExerciseLibrary.Count == 0)
         {
-            Console.WriteLine("No exercises found. Please add exercises first.");
+            AnsiConsole.MarkupLine("[red]No exercises found. Please add exercises first.[/]");
             return;
         }
 
-        Console.WriteLine("Exercises Library:");
+        var table = new Table()
+            .Border(TableBorder.Rounded)
+            .Title("[bold]Exercises Library[/]")
+            .AddColumn("ID")
+            .AddColumn("Name")
+            .AddColumn("Type")
+            .AddColumn("Description");
+
         foreach (var exercise in dataManager.ExerciseLibrary)
         {
-            Console.WriteLine($"ID: {exercise.ExerciseId}, Name: {exercise.ExerciseName}, Type: {exercise.ExType}");
-            Console.WriteLine($"Description: {exercise.ExerciseDescription}");
-            Console.WriteLine("-----------------------------------");
+            table.AddRow(
+                exercise.ExerciseId.ToString(),
+                exercise.ExerciseName,
+                exercise.ExType.ToString(),
+                exercise.ExerciseDescription
+            );
         }
+
+        AnsiConsole.Write(table);
     }
+
 
 // workout routines library menu
     public void WorkoutRoutinesLibraryMenu()
     {
-        Console.WriteLine("Workout Routines Library");
-        Console.WriteLine("1. Create Workout Routine");
-        Console.WriteLine("2. Remove Workout Routine");
-        Console.WriteLine("3. View Workout Routines");
-        Console.WriteLine("4. Back to Main Menu");
-
-        var input = Console.ReadLine();
-        switch (input)
+        while (true)
         {
-            case "1":
-                CreateWorkoutRoutine();
-                break;
-            case "2":
-            // TODO: remove workout routine
-                Console.WriteLine("Remove Workout Routine feature is under development");
-                break;
-            case "3":
-                ViewWorkoutRoutines();
-                break;
-            case "4":
-                return;
-            default:
-                Console.WriteLine("Invalid option. Please try again.");
-                break;
+            var workoutRoutineLibraryMenuChoice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[bold]Workout Routines Library[/]")
+                    .AddChoices(
+                        "Create Workout Routine",
+                        "Remove Workout Routine",
+                        "View Workout Routines",
+                        "Back"
+                    )
+            );
+
+            switch (workoutRoutineLibraryMenuChoice)
+            {
+                case "Create Workout Routine":
+                    CreateWorkoutRoutine();
+                    break;
+                case "Remove Workout Rountine":
+                    // RemoveWorkoutRoutine();
+                    AnsiConsole.MarkupLine("[yellow]Remove Workout Routine feature is under development");
+                    break;
+                case "View Workout Routines":
+                    ViewWorkoutRoutines();
+                    break;
+                case "Back":
+                    return;
+            }
         }
     }
-
 
 // workout routines library methods
     private void CreateWorkoutRoutine()
     {
-        Console.Write("Enter Routine Name: ");
-        var routineName = Console.ReadLine()?.Trim();
+        var routineName = AnsiConsole.Ask<string>("Enter [green]Routine Name[/]:");
         if (string.IsNullOrEmpty(routineName))
         {
-            Console.WriteLine("Routine Name cannot be empty. Please try again.");
+            AnsiConsole.MarkupLine("[red]Routine Name cannot be empty.[/]");
             return;
         }
 
         if (dataManager.ExerciseLibrary.Count == 0)
         {
-            Console.WriteLine("No exercises available. Add exercises to the library first.");
+            AnsiConsole.MarkupLine("[red]No exercises available. Add exercises to the library first.[/]");
             return;
         }
 
-        // display existing workouts
-        Console.WriteLine("Available Exercises:");
-        for (int i = 0; i < dataManager.ExerciseLibrary.Count; i++)
-        {
-            var exercise = dataManager.ExerciseLibrary[i];
-            Console.WriteLine($"{i + 1}. {exercise.ExerciseName} ({exercise.ExType})");
-        }
+        var selectedExercises = AnsiConsole.Prompt(
+            new MultiSelectionPrompt<string>()
+                .Title("Select [green]exercises[/] to add:")
+                .AddChoices(dataManager.ExerciseLibrary.Select(e => $"{e.ExerciseName} ({e.ExType})")));
 
-        Console.WriteLine("Select exercises to add (Enter numbers separated by commas): ");
-        var exerciseSelection = Console.ReadLine()?.Trim();
+        var exercises = dataManager.ExerciseLibrary
+            .Where(e => selectedExercises.Contains($"{e.ExerciseName} ({e.ExType})"))
+            .ToList();
 
-        if (string.IsNullOrEmpty(exerciseSelection))
-        {
-            Console.WriteLine("No exercises selected. Please try again.");
-            return;
-        }
-
-        // select exercises 
-        var selectedExercises = new List<Exercise>();
-
-        foreach (var selection in exerciseSelection.Split(","))
-        {
-            if (int.TryParse(selection.Trim(), out int index) && index >= 1 && index <= dataManager.ExerciseLibrary.Count)
-            {
-                selectedExercises.Add(dataManager.ExerciseLibrary[index - 1]);
-                Console.WriteLine($"Added {dataManager.ExerciseLibrary[index - 1].ExerciseName}");
-            }
-            else
-            {
-                Console.WriteLine($"Invalid selection: {selection}");
-            }
-        }
-
-        var newWorkoutRoutine = new WorkoutRoutine(dataManager.GenerateWorkoutRoutineId(), routineName, selectedExercises);
+        var newWorkoutRoutine = new WorkoutRoutine(dataManager.GenerateWorkoutRoutineId(), routineName, exercises);
         if (!dataManager.AddWorkoutRoutine(newWorkoutRoutine))
         {
-            Console.WriteLine("Workout Routine name already exists. Please try again.");
+            AnsiConsole.MarkupLine("[red]Workout Routine name already exists. Please try again.[/]");
             return;
-        }   
+        }
 
-        Console.WriteLine($"Workout Routine {routineName} created.");
+        AnsiConsole.MarkupLine($"[green]Workout Routine '{routineName}' created.[/]");
     }
-
+ 
     private void ViewWorkoutRoutines()
     {
         if (dataManager.WorkoutRoutines.Count == 0)
         {
-            Console.WriteLine("No workout routines found. Please create a workout routine first.");
+            AnsiConsole.MarkupLine("[red]No workout routines found. Please create a workout routine first.[/]");
             return;
         }
 
-        Console.WriteLine("Workout Routines:");
         foreach (var routine in dataManager.WorkoutRoutines)
         {
-            Console.WriteLine($"ID: {routine.WorkoutRoutineId}, Name: {routine.WorkoutRoutineName}");
-            Console.WriteLine("Exercises:");
-            if (routine.Exercises != null && routine.Exercises.Count > 0)
-            {
-                foreach (var exercise in routine.Exercises)
-                {
-                    if (exercise != null) {
-                        Console.WriteLine($"- {exercise.ExerciseName} ({exercise.ExType})");
-                    }
-                }
-            } 
-            else
-            {
-                Console.WriteLine("- No exercises in this routine.");
-            }
-            Console.WriteLine("-----------------------------------");
+            var routinesPanel = new Panel(
+                new Rows(
+                    new Markup($"[bold]ID:[/] {routine.WorkoutRoutineId}"),
+                    new Markup($"[bold]Exercises:[/]"),
+                    routine.Exercises?.Count > 0
+                        ? new Rows(routine.Exercises
+                            .Where(e => e != null)
+                            .Select(e => new Markup($"  • {e.ExerciseName} ({e.ExType})")))
+                        : new Rows(new Markup("[grey]No exercises in this routine.[/]"))
+                ))
+                .Header($"[blue]{routine.WorkoutRoutineName}[/]")
+                .Border(BoxBorder.Rounded);
+
+            AnsiConsole.Write(routinesPanel);
         }
     }
+
+
 
 
 // start workout routine menu
