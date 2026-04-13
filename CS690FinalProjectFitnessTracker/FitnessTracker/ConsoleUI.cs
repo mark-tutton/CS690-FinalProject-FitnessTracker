@@ -67,6 +67,7 @@ public class ConsoleUI
                     if (dataManager.CurrentUser == null)
                     {
                         AnsiConsole.MarkupLine("[red]Please select or create a user first.[/]");
+                        AnsiConsole.MarkupLine("[grey]Press any key to return to the main menu.[/]");
                         Console.ReadKey(true);
                         break;
                     }
@@ -76,6 +77,7 @@ public class ConsoleUI
                     if (dataManager.CurrentUser == null)
                     {
                         AnsiConsole.MarkupLine("[red]Please select or create a user first.[/]");
+                        AnsiConsole.MarkupLine("[grey]Press any key to return to the main menu.[/]");
                         Console.ReadKey(true);
                         break;
                     }
@@ -91,7 +93,16 @@ public class ConsoleUI
     // user methods
     private void CreateUser()
     {
-        var userName = AnsiConsole.Ask<string>("Enter [green] User Name:[/]");
+        var userName = AnsiConsole.Prompt(
+            new TextPrompt<string>(
+            "Enter [green] User Name:[/] [grey](leave blank to cancel)[/]")
+            .AllowEmpty());
+        
+        if (string.IsNullOrWhiteSpace(userName))
+        {
+            return;
+        }
+
 
         if (string.IsNullOrEmpty(userName))
         {
@@ -117,11 +128,17 @@ public class ConsoleUI
             return;
         }
 
+        var userChoices = dataManager.Users.Select(u => u.UserName).Append("<- Back").ToList();
         var selectedUser = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .Title("Select a user:")
-                .AddChoices(dataManager.Users.Select(u => u.UserName))
+                .AddChoices(userChoices)
         );
+
+        if (selectedUser == "<- Back")
+        {
+            return;
+        }
 
         var user = dataManager.Users.First(u => u.UserName == selectedUser);
         dataManager.SetCurrentUser(user);
