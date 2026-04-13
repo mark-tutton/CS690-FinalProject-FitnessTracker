@@ -544,8 +544,9 @@ public class ConsoleUI
         newSession.AddNotes(string.Join("; ", exerciseLogs));
 
         var userNote = AnsiConsole.Prompt(
-            new TextPrompt<string>("Add a [green]note[/] about this session (optional):")
-        .AllowEmpty()
+            new TextPrompt<string>(
+                "Add a [green]note[/] about this session (optional):"
+            ).AllowEmpty()
         );
 
         if (!string.IsNullOrEmpty(userNote))
@@ -561,8 +562,8 @@ public class ConsoleUI
     // Workout History
     private void ViewWorkoutHistory()
     {
-        var userSessions = dataManager.WorkoutSessions
-            .Where(s => s.UserId == dataManager.CurrentUser.UserId)
+        var userSessions = dataManager
+            .WorkoutSessions.Where(s => s.UserId == dataManager.CurrentUser.UserId)
             .ToList();
 
         if (userSessions.Count == 0)
@@ -574,8 +575,7 @@ public class ConsoleUI
             return;
         }
 
-
-        // filter workouts 
+        // filter workouts
         // TODO: maybe refactor so this is in a while loop so user can return to filter menu insted of main menu after viewing sessions
         var filterChoice = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
@@ -583,12 +583,13 @@ public class ConsoleUI
                 .AddChoices("All", "Strength", "Cardio", "Flexibility", "Balance")
         );
 
-        var sessionsToDisplay = filterChoice == "All"
-            ? userSessions
-            : userSessions.Where(ws =>
-                ws.Routine.Exercises.Any(e => e != null && e.ExType.ToString() == filterChoice)
-            ); 
-        
+        var sessionsToDisplay =
+            filterChoice == "All"
+                ? userSessions
+                : userSessions.Where(ws =>
+                    ws.Routine.Exercises.Any(e => e != null && e.ExType.ToString() == filterChoice)
+                );
+
         if (!sessionsToDisplay.Any())
         {
             AnsiConsole.MarkupLine(
@@ -635,7 +636,19 @@ public class ConsoleUI
     // Progress and Stats
     private void ViewProgressAndStats()
     {
-        if (dataManager.WorkoutSessions.Count == 0)
+        if (dataManager.CurrentUser == null)
+        {
+            AnsiConsole.MarkupLine("[red]Please select or create a user first.[/]");
+            AnsiConsole.MarkupLine("[grey]Press any key to return to the main menu.[/]");
+            Console.ReadKey(true);
+            return;
+        }
+
+        var userSessions = dataManager
+            .WorkoutSessions.Where(s => s.UserId == dataManager.CurrentUser.UserId)
+            .ToList();
+
+        if (userSessions.Count == 0)
         {
             AnsiConsole.MarkupLine(
                 "[red]No workout sessions found. Start a workout routine to record sessions.[/]"
@@ -644,7 +657,7 @@ public class ConsoleUI
             return;
         }
 
-        var statsList = statsManager.GetStats(dataManager.WorkoutSessions);
+        var statsList = statsManager.GetStats(userSessions);
 
         foreach (var stats in statsList)
         {
