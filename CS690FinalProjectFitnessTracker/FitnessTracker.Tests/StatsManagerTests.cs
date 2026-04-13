@@ -75,7 +75,7 @@ public class StatsManagerTests
 
     private WorkoutSession MakeSession(string id, string notes)
     {
-        var session = new WorkoutSession(id, DateTime.Now, routine);
+        var session = new WorkoutSession(id, "user-1", DateTime.Now, routine);
         session.AddNotes(notes);
         return session;
     }

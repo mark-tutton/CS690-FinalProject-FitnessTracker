@@ -16,6 +16,7 @@ public class DataManagerTests
         File.WriteAllText("data/workoutSessions.txt",
             "session-1:user-1:routine-1:2026-04-12 10-30-00:True:Test session note:Felt fatgigued but completed the workout");
         dataManager = new DataManager();
+        dataManager.SetCurrentUser(dataManager.Users[0]);
     }
 
     // Users
@@ -138,7 +139,7 @@ public class DataManagerTests
     [Fact]
     public void Test_AddWorkoutSession_IncreasesCount()
     {
-        var session = new WorkoutSession("session-2", dataManager.CurrentUser.UserId, DateTime.Now, dataManager.WorkoutRoutines[0]);
+        var session = new WorkoutSession("session-2", "user-1", DateTime.Now, dataManager.WorkoutRoutines[0]);
         dataManager.AddWorkoutSession(session);      
         Assert.Equal(2, dataManager.WorkoutSessions.Count);
     }
