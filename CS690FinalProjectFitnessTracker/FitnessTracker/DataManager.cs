@@ -16,10 +16,6 @@ public class DataManager
 
     public List<WorkoutSession> WorkoutSessions { get; private set; }
 
-    // public List<ProgressTracker> ProgressTrackers { get; private set; }
-
-    // public List<StatsTracker> StatsTrackers { get; private set; }
-
     public DataManager()
     {
         fileManager = new FileManager();

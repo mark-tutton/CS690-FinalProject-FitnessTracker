@@ -100,8 +100,3 @@ public class WorkoutSession
         UserNotes = userNotes;
     }
 }
-
-// build out ProgressTracker
-
-// build out ExerciseLog
-
