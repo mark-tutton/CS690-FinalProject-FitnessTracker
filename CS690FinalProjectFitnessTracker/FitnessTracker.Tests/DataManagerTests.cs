@@ -14,7 +14,7 @@ public class DataManagerTests
         File.WriteAllText("data/workoutRoutines.txt",
             "routine-1:Morning Routine:exercise-1,exercise-2");
         File.WriteAllText("data/workoutSessions.txt",
-            "session-1:routine-1:2026-04-12 10-30-00:True:Test session note");
+            "session-1:routine-1:2026-04-12 10-30-00:True:Test session note:Felt fatgigued but completed the workout");
         dataManager = new DataManager();
     }
 
@@ -128,6 +128,11 @@ public class DataManagerTests
     {
         Assert.Equal(1, dataManager.WorkoutSessions.Count);
         Assert.True(dataManager.WorkoutSessions[0].IsCompleted);   
+    }
+
+    public void Test_LoadWorkoutSessions_LoadsUserNotes()
+    {
+        Assert.Equal("Felt fatgigued but completed the workout", dataManager.WorkoutSessions[0].UserNotes);
     }
 
     [Fact]

@@ -72,6 +72,7 @@ public class WorkoutSession
     public DateTime SessionDate { get; }
     public WorkoutRoutine Routine { get; }
     public string Notes { get; private set;}
+    public string UserNotes { get; private set; }
     public bool IsCompleted { get; private set; }
 
     public WorkoutSession(string sessionId, DateTime sessionDate, WorkoutRoutine routine)
@@ -80,6 +81,7 @@ public class WorkoutSession
         SessionDate = sessionDate;
         Routine = routine;
         Notes = "";
+        UserNotes = "";
         IsCompleted = false;
     }
 
@@ -91,6 +93,11 @@ public class WorkoutSession
     public void AddNotes(string notes)
     {
         Notes = notes;
+    }
+
+    public void AddUserNotes(string userNotes)
+    {
+        UserNotes = userNotes;
     }
 }
 

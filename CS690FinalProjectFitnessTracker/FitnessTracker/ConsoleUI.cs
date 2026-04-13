@@ -67,7 +67,9 @@ public class ConsoleUI
                     if (dataManager.CurrentUser == null)
                     {
                         AnsiConsole.MarkupLine("[red]Please select or create a user first.[/]");
-                        AnsiConsole.MarkupLine("[grey]Press any key to return to the main menu.[/]");
+                        AnsiConsole.MarkupLine(
+                            "[grey]Press any key to return to the main menu.[/]"
+                        );
                         Console.ReadKey(true);
                         break;
                     }
@@ -77,7 +79,9 @@ public class ConsoleUI
                     if (dataManager.CurrentUser == null)
                     {
                         AnsiConsole.MarkupLine("[red]Please select or create a user first.[/]");
-                        AnsiConsole.MarkupLine("[grey]Press any key to return to the main menu.[/]");
+                        AnsiConsole.MarkupLine(
+                            "[grey]Press any key to return to the main menu.[/]"
+                        );
                         Console.ReadKey(true);
                         break;
                     }
@@ -95,14 +99,14 @@ public class ConsoleUI
     {
         var userName = AnsiConsole.Prompt(
             new TextPrompt<string>(
-            "Enter [green] User Name:[/] [grey](leave blank to cancel)[/]")
-            .AllowEmpty());
-        
+                "Enter [green] User Name:[/] [grey](leave blank to cancel)[/]"
+            ).AllowEmpty()
+        );
+
         if (string.IsNullOrWhiteSpace(userName))
         {
             return;
         }
-
 
         if (string.IsNullOrEmpty(userName))
         {
@@ -130,9 +134,7 @@ public class ConsoleUI
 
         var userChoices = dataManager.Users.Select(u => u.UserName).Append("<- Back").ToList();
         var selectedUser = AnsiConsole.Prompt(
-            new SelectionPrompt<string>()
-                .Title("Select a user:")
-                .AddChoices(userChoices)
+            new SelectionPrompt<string>().Title("Select a user:").AddChoices(userChoices)
         );
 
         if (selectedUser == "<- Back")
@@ -539,6 +541,16 @@ public class ConsoleUI
         );
         newSession.MarkSessionCompleted();
         newSession.AddNotes(string.Join("; ", exerciseLogs));
+
+        var userNote = AnsiConsole.Prompt(
+            new TextPrompt<string>("Add a [green]note[/] about this session (optional):")
+        );
+
+        if (!string.IsNullOrEmpty(userNote))
+        {
+            newSession.AddUserNotes(userNote);
+        }
+
         dataManager.AddWorkoutSession(newSession);
 
         AnsiConsole.MarkupLine("[green]Workout session recorded as completed![/]");
@@ -571,7 +583,13 @@ public class ConsoleUI
                         $"[bold]Completed:[/] {(session.IsCompleted ? "[green]Yes[/]" : "[red]No[/]")}"
                     ),
                     new Markup("[bold]Exercises:[/]"),
-                    notesMarkup
+                    notesMarkup,
+                    new Markup("[bold]Note:[/]"),
+                    new Markup(
+                        !string.IsNullOrWhiteSpace(session.UserNotes)
+                            ? $"  {session.UserNotes}"
+                            : "[grey]None[/]"
+                    )
                 )
             )
                 .Header($"[blue]{session.Routine.WorkoutRoutineName}[/]")
