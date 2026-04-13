@@ -545,6 +545,7 @@ public class ConsoleUI
 
         var userNote = AnsiConsole.Prompt(
             new TextPrompt<string>("Add a [green]note[/] about this session (optional):")
+        .AllowEmpty()
         );
 
         if (!string.IsNullOrEmpty(userNote))
