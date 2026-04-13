@@ -93,7 +93,7 @@ public class DataManager
             var lines = fileManager.ReadAllLines("data/exercises.txt");
             foreach (var line in lines)
             {
-                var parts = line.Split(':');
+                var parts = line.Split(':', 5);
                 if (parts.Length >= 4)
                 {
                     ExerciseType exType;

@@ -28,14 +28,7 @@ public class FileManager
         EnsureFileExists(fileName);
         File.AppendAllText(fileName, line + Environment.NewLine);
     }
-
-    // appends data to the specified file
-    public void AppendData(string fileName,string data)
-    {
-        EnsureFileExists(fileName);
-        File.AppendAllText(fileName, data);
-    }
-
+    
     public void OverwriteData(string fileName, string data)
     {
         EnsureFileExists(fileName);
