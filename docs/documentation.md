@@ -158,7 +158,7 @@ dotnet run
 
 ## Tests
 
-Tests are locatd ithe FitnessTracker.Tests directory.
+Tests are located in the FitnessTracker.Tests directory.
 
 ### Run Tests
 
