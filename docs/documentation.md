@@ -156,6 +156,18 @@ dotnet run
 
 ---
 
+## Tests
+
+Tests are locatd ithe FitnessTracker.Tests directory.
+
+### Run Tests
+
+In the CS690FinalProjectFitnessTracker directory:
+
+Run `dotnet test`
+
+---
+
 # Deployment Documentation
 
 ## Download the Release
