@@ -536,6 +536,7 @@ public class ConsoleUI
 
         var newSession = new WorkoutSession(
             dataManager.GenerateWorkoutSessionId(),
+            dataManager.CurrentUser.UserId,
             sessionDate,
             selectedRoutine
         );
@@ -559,7 +560,11 @@ public class ConsoleUI
     // Workout History
     private void ViewWorkoutHistory()
     {
-        if (dataManager.WorkoutSessions.Count == 0)
+        var userSessions = dataManager.WorkoutSessions
+            .Where(s => s.UserId == dataManager.CurrentUser.UserId)
+            .ToList();
+
+        if (userSessions.Count == 0)
         {
             AnsiConsole.MarkupLine(
                 "[red]No workout sessions found. Start a workout routine to record sessions.[/]"
@@ -578,8 +583,8 @@ public class ConsoleUI
         );
 
         var sessionsToDisplay = filterChoice == "All"
-            ? dataManager.WorkoutSessions
-            : dataManager.WorkoutSessions.Where(ws =>
+            ? userSessions
+            : userSessions.Where(ws =>
                 ws.Routine.Exercises.Any(e => e != null && e.ExType.ToString() == filterChoice)
             ); 
         

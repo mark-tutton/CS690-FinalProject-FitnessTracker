@@ -215,10 +215,11 @@ public class DataManager
                     var sessionCompleted = bool.Parse(parts[3]);
                     var notes = parts[4];
                     var userNotes = parts.Length >= 6 ? parts[5] : "";
+                    var userId = parts.Length >= 7 ? parts[6] : ""; 
 
                     if (routine != null)
                     {
-                        var session = new WorkoutSession(sessionId, sessionDate, routine);
+                        var session = new WorkoutSession(sessionId, userId, sessionDate, routine);
                         if (sessionCompleted) session.MarkSessionCompleted();
                         session.AddNotes(notes);
                         session.AddUserNotes(userNotes);
@@ -234,7 +235,7 @@ public class DataManager
 
     private void SaveWorkoutSessions()
     {
-        var data = string.Join(Environment.NewLine, WorkoutSessions.Select(ws => $"{ws.SessionId}:{ws.Routine.WorkoutRoutineId}:{ws.SessionDate:yyyy-MM-dd HH-mm-ss}:{ws.IsCompleted}:{ws.Notes}:{ws.UserNotes}"));
+        var data = string.Join(Environment.NewLine, WorkoutSessions.Select(ws => $"{ws.SessionId}:{ws.Routine.WorkoutRoutineId}:{ws.SessionDate:yyyy-MM-dd HH-mm-ss}:{ws.IsCompleted}:{ws.Notes}:{ws.UserNotes}:{ws.UserId}"));
         fileManager.OverwriteData("data/workoutSessions.txt", data);
     }
 

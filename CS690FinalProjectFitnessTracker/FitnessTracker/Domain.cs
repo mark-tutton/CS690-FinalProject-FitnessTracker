@@ -69,15 +69,17 @@ public class WorkoutRoutine
 public class WorkoutSession
 {
     public string SessionId { get; }
+    public string UserId { get; }
     public DateTime SessionDate { get; }
     public WorkoutRoutine Routine { get; }
     public string Notes { get; private set;}
     public string UserNotes { get; private set; }
     public bool IsCompleted { get; private set; }
 
-    public WorkoutSession(string sessionId, DateTime sessionDate, WorkoutRoutine routine)
+    public WorkoutSession(string sessionId, string userId, DateTime sessionDate, WorkoutRoutine routine)
     {
         this.SessionId = sessionId;
+        UserId = userId;
         SessionDate = sessionDate;
         Routine = routine;
         Notes = "";
