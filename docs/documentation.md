@@ -175,5 +175,5 @@ Run `dotnet test`
 1. Go to the [releases page](https://github.com/mark-tutton/CS690-FinalProject-FitnessTracker/releases)
 2. Download the latest release
 3. Extract the zip
-4. cd into the publish directory
-5. Run the executable using `dotnet FitnessTracker`
+4. cd into the FitnessTracker-v2.0.0 directory
+5. Run the executable using `dotnet FitnessTracker.dll`
