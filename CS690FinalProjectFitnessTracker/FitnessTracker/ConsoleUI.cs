@@ -568,7 +568,31 @@ public class ConsoleUI
             return;
         }
 
-        foreach (var session in dataManager.WorkoutSessions)
+
+        // filter workouts 
+        // TODO: maybe refactor so this is in a while loop so user can return to filter menu insted of main menu after viewing sessions
+        var filterChoice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Filter by [green]exercise type[/]:")
+                .AddChoices("All", "Strength", "Cardio", "Flexibility", "Balance")
+        );
+
+        var sessionsToDisplay = filterChoice == "All"
+            ? dataManager.WorkoutSessions
+            : dataManager.WorkoutSessions.Where(ws =>
+                ws.Routine.Exercises.Any(e => e != null && e.ExType.ToString() == filterChoice)
+            ); 
+        
+        if (!sessionsToDisplay.Any())
+        {
+            AnsiConsole.MarkupLine(
+                $"[red]No workout sessions found for the selected filter: {filterChoice}.[/]"
+            );
+            Console.ReadKey(true);
+            return;
+        }
+
+        foreach (var session in sessionsToDisplay)
         {
             var noteLines = session.Notes?.Split("; ") ?? Array.Empty<string>();
             var notesMarkup =
