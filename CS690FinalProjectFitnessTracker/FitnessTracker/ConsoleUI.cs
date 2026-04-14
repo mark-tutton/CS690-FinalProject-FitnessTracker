@@ -644,6 +644,29 @@ public class ConsoleUI
             return;
         }
 
+        while (true)
+        {
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[bold]Progress & Stats[/]")
+                    .AddChoices("Overall Stats", "Compare Recent Activities", "Back")
+            );
+            switch (choice)
+            {
+                case "Overall Stats":
+                    ViewOverallStats();
+                    break;
+                case "Compare Recent Activities":
+                    // CompareRecentActivities();
+                    break;
+                case "Back":
+                    return;
+            }
+        }
+    }
+
+    private void ViewOverallStats()
+    {
         var userSessions = dataManager
             .WorkoutSessions.Where(s => s.UserId == dataManager.CurrentUser.UserId)
             .ToList();
