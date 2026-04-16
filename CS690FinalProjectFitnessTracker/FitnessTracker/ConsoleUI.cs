@@ -657,7 +657,7 @@ public class ConsoleUI
                     ViewOverallStats();
                     break;
                 case "Compare Recent Activities":
-                    // CompareRecentActivities();
+                    CompareRecentActivities();
                     break;
                 case "Back":
                     return;
@@ -723,6 +723,112 @@ public class ConsoleUI
         }
 
         AnsiConsole.MarkupLine("[grey]Press any key to return to the main menu.[/]");
+        Console.ReadKey(true);
+    }
+
+    private void CompareRecentActivities()
+    {
+        var userSessions = dataManager
+            .WorkoutSessions.Where(s => s.UserId == dataManager.CurrentUser.UserId)
+            .ToList();
+
+        var selectedType = AnsiConsole.Prompt(
+            new SelectionPrompt<ExerciseType>()
+                .Title("Select [green]exercise type[/] to compare:")
+                .AddChoices(Enum.GetValues<ExerciseType>())
+        );
+
+        var recentSessions = statsManager.GetTwoMostRecentByType(userSessions, selectedType);
+
+        if (recentSessions.Count == 0)
+        {
+            AnsiConsole.MarkupLine($"[grey]No sessions found with {selectedType} exercises.[/]");
+            Console.ReadKey(true);
+            return;
+        }
+
+        if (recentSessions.Count == 1)
+        {
+            AnsiConsole.MarkupLine(
+                $"[grey]Only one {selectedType} session found. Need at least two to compare.[/]"
+            );
+            Console.ReadKey(true);
+            return;
+        }
+
+        var recentStats = statsManager.ParseSessionStatsByType(recentSessions[0], selectedType);
+        var previousStats = statsManager.ParseSessionStatsByType(recentSessions[1], selectedType);
+
+        var comparisonTable = new Table()
+            .Border(TableBorder.Rounded)
+            .Title($"[bold blue]Progress Comparison: {selectedType}[/]")
+            .AddColumn("Metric")
+            .AddColumn($"[bold]Most Recent[/]\n[grey]{recentSessions[0].SessionDate:MM/dd/yyyy}[/]")
+            .AddColumn($"[bold]Previous[/]\n[grey]{recentSessions[1].SessionDate:MM/dd/yyyy}[/]")
+            .AddColumn("[bold]Change[/]");
+
+        if (recentStats.TotalSets > 0 || previousStats.TotalSets > 0)
+        {
+            var diff = recentStats.TotalSets - previousStats.TotalSets;
+            var change =
+                diff > 0 ? $"[green]+{diff}[/]"
+                : diff < 0 ? $"[red]{diff}[/]"
+                : "[grey]–[/]";
+            comparisonTable.AddRow(
+                "Sets",
+                recentStats.TotalSets.ToString(),
+                previousStats.TotalSets.ToString(),
+                change
+            );
+        }
+
+        if (recentStats.TotalReps > 0 || previousStats.TotalReps > 0)
+        {
+            var diff = recentStats.TotalReps - previousStats.TotalReps;
+            var change =
+                diff > 0 ? $"[green]+{diff}[/]"
+                : diff < 0 ? $"[red]{diff}[/]"
+                : "[grey]–[/]";
+            comparisonTable.AddRow(
+                "Reps",
+                recentStats.TotalReps.ToString(),
+                previousStats.TotalReps.ToString(),
+                change
+            );
+        }
+
+        if (recentStats.TotalMinutes > 0 || previousStats.TotalMinutes > 0)
+        {
+            var diff = recentStats.TotalMinutes - previousStats.TotalMinutes;
+            var change =
+                diff > 0 ? $"[green]+{diff:F1}[/]"
+                : diff < 0 ? $"[red]{diff:F1}[/]"
+                : "[grey]–[/]";
+            comparisonTable.AddRow(
+                "Minutes",
+                recentStats.TotalMinutes.ToString("F1"),
+                previousStats.TotalMinutes.ToString("F1"),
+                change
+            );
+        }
+
+        if (recentStats.TotalDistance > 0 || previousStats.TotalDistance > 0)
+        {
+            var diff = recentStats.TotalDistance - previousStats.TotalDistance;
+            var change =
+                diff > 0 ? $"[green]+{diff:F1}[/]"
+                : diff < 0 ? $"[red]{diff:F1}[/]"
+                : "[grey]–[/]";
+            comparisonTable.AddRow(
+                "Distance (mi)",
+                recentStats.TotalDistance.ToString("F1"),
+                previousStats.TotalDistance.ToString("F1"),
+                change
+            );
+        }
+
+        AnsiConsole.Write(comparisonTable);
+        AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
         Console.ReadKey(true);
     }
 }
