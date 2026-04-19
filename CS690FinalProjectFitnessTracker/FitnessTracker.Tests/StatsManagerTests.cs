@@ -73,10 +73,39 @@ public class StatsManagerTests
         Assert.Equal(0, stats[0].TotalSets);
     }
 
+    // comparison feat
+    [Fact]
+    public void Test_GetTwoMostRecentByType_ReturnsTwoMostRecent()
+    {
+        var routine = MakeRoutine("Squat", ExerciseType.Strength);
+        var sessions = new List<WorkoutSession>
+        {
+            MakeDatedSession("session-1", routine, new DateTime(2026, 4, 17)),
+            MakeDatedSession("session-2", routine, new DateTime(2026, 4, 18)),
+            MakeDatedSession("session-3", routine, new DateTime(2026, 4, 19)),
+        };
+
+        var result = statsManager.GetTwoMostRecentByType(sessions, ExerciseType.Strength);
+        Assert.Equal(2, result.Count);
+        Assert.Equal(new DateTime(2026, 4, 19), result[0].SessionDate);
+        Assert.Equal(new DateTime(2026, 4, 18), result[1].SessionDate);
+    }
+
+    // helpers
     private WorkoutSession MakeSession(string id, string notes)
     {
-        var session = new WorkoutSession(id, DateTime.Now, routine);
+        var session = new WorkoutSession(id, "user-1", DateTime.Now, routine);
         session.AddNotes(notes);
         return session;
+    }
+
+    private WorkoutSession MakeDatedSession(string id, WorkoutRoutine routine, DateTime date)                                                                   {                                                     
+        return new WorkoutSession(id, "user-1", date, routine);
+    }
+
+    private WorkoutRoutine MakeRoutine(string exerciseName, ExerciseType type)               
+    {    
+        var exercise = new Exercise($"ex-{exerciseName}", exerciseName, "desc", type);
+        return new WorkoutRoutine($"r-{exerciseName}", $"{exerciseName} Routine", new List<Exercise> { exercise });                                                                                 
     }
 }

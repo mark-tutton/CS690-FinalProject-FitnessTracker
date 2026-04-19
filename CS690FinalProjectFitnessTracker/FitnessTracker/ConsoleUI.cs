@@ -67,7 +67,9 @@ public class ConsoleUI
                     if (dataManager.CurrentUser == null)
                     {
                         AnsiConsole.MarkupLine("[red]Please select or create a user first.[/]");
-                        AnsiConsole.MarkupLine("[grey]Press any key to return to the main menu.[/]");
+                        AnsiConsole.MarkupLine(
+                            "[grey]Press any key to return to the main menu.[/]"
+                        );
                         Console.ReadKey(true);
                         break;
                     }
@@ -77,7 +79,9 @@ public class ConsoleUI
                     if (dataManager.CurrentUser == null)
                     {
                         AnsiConsole.MarkupLine("[red]Please select or create a user first.[/]");
-                        AnsiConsole.MarkupLine("[grey]Press any key to return to the main menu.[/]");
+                        AnsiConsole.MarkupLine(
+                            "[grey]Press any key to return to the main menu.[/]"
+                        );
                         Console.ReadKey(true);
                         break;
                     }
@@ -95,14 +99,14 @@ public class ConsoleUI
     {
         var userName = AnsiConsole.Prompt(
             new TextPrompt<string>(
-            "Enter [green] User Name:[/] [grey](leave blank to cancel)[/]")
-            .AllowEmpty());
-        
+                "Enter [green] User Name:[/] [grey](leave blank to cancel)[/]"
+            ).AllowEmpty()
+        );
+
         if (string.IsNullOrWhiteSpace(userName))
         {
             return;
         }
-
 
         if (string.IsNullOrEmpty(userName))
         {
@@ -130,9 +134,7 @@ public class ConsoleUI
 
         var userChoices = dataManager.Users.Select(u => u.UserName).Append("<- Back").ToList();
         var selectedUser = AnsiConsole.Prompt(
-            new SelectionPrompt<string>()
-                .Title("Select a user:")
-                .AddChoices(userChoices)
+            new SelectionPrompt<string>().Title("Select a user:").AddChoices(userChoices)
         );
 
         if (selectedUser == "<- Back")
@@ -534,11 +536,24 @@ public class ConsoleUI
 
         var newSession = new WorkoutSession(
             dataManager.GenerateWorkoutSessionId(),
+            dataManager.CurrentUser.UserId,
             sessionDate,
             selectedRoutine
         );
         newSession.MarkSessionCompleted();
         newSession.AddNotes(string.Join("; ", exerciseLogs));
+
+        var userNote = AnsiConsole.Prompt(
+            new TextPrompt<string>(
+                "Add a [green]note[/] about this session (optional):"
+            ).AllowEmpty()
+        );
+
+        if (!string.IsNullOrEmpty(userNote))
+        {
+            newSession.AddUserNotes(userNote);
+        }
+
         dataManager.AddWorkoutSession(newSession);
 
         AnsiConsole.MarkupLine("[green]Workout session recorded as completed![/]");
@@ -547,7 +562,11 @@ public class ConsoleUI
     // Workout History
     private void ViewWorkoutHistory()
     {
-        if (dataManager.WorkoutSessions.Count == 0)
+        var userSessions = dataManager
+            .WorkoutSessions.Where(s => s.UserId == dataManager.CurrentUser.UserId)
+            .ToList();
+
+        if (userSessions.Count == 0)
         {
             AnsiConsole.MarkupLine(
                 "[red]No workout sessions found. Start a workout routine to record sessions.[/]"
@@ -556,7 +575,31 @@ public class ConsoleUI
             return;
         }
 
-        foreach (var session in dataManager.WorkoutSessions)
+        // filter workouts
+        // TODO: maybe refactor so this is in a while loop so user can return to filter menu insted of main menu after viewing sessions
+        var filterChoice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("Filter by [green]exercise type[/]:")
+                .AddChoices("All", "Strength", "Cardio", "Flexibility", "Balance")
+        );
+
+        var sessionsToDisplay =
+            filterChoice == "All"
+                ? userSessions
+                : userSessions.Where(ws =>
+                    ws.Routine.Exercises.Any(e => e != null && e.ExType.ToString() == filterChoice)
+                );
+
+        if (!sessionsToDisplay.Any())
+        {
+            AnsiConsole.MarkupLine(
+                $"[red]No workout sessions found for the selected filter: {filterChoice}.[/]"
+            );
+            Console.ReadKey(true);
+            return;
+        }
+
+        foreach (var session in sessionsToDisplay)
         {
             var noteLines = session.Notes?.Split("; ") ?? Array.Empty<string>();
             var notesMarkup =
@@ -571,7 +614,13 @@ public class ConsoleUI
                         $"[bold]Completed:[/] {(session.IsCompleted ? "[green]Yes[/]" : "[red]No[/]")}"
                     ),
                     new Markup("[bold]Exercises:[/]"),
-                    notesMarkup
+                    notesMarkup,
+                    new Markup("[bold]Note:[/]"),
+                    new Markup(
+                        !string.IsNullOrWhiteSpace(session.UserNotes)
+                            ? $"  {session.UserNotes}"
+                            : "[grey]None[/]"
+                    )
                 )
             )
                 .Header($"[blue]{session.Routine.WorkoutRoutineName}[/]")
@@ -587,7 +636,42 @@ public class ConsoleUI
     // Progress and Stats
     private void ViewProgressAndStats()
     {
-        if (dataManager.WorkoutSessions.Count == 0)
+        if (dataManager.CurrentUser == null)
+        {
+            AnsiConsole.MarkupLine("[red]Please select or create a user first.[/]");
+            AnsiConsole.MarkupLine("[grey]Press any key to return to the main menu.[/]");
+            Console.ReadKey(true);
+            return;
+        }
+
+        while (true)
+        {
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("[bold]Progress & Stats[/]")
+                    .AddChoices("Overall Stats", "Compare Recent Activities", "Back")
+            );
+            switch (choice)
+            {
+                case "Overall Stats":
+                    ViewOverallStats();
+                    break;
+                case "Compare Recent Activities":
+                    CompareRecentActivities();
+                    break;
+                case "Back":
+                    return;
+            }
+        }
+    }
+
+    private void ViewOverallStats()
+    {
+        var userSessions = dataManager
+            .WorkoutSessions.Where(s => s.UserId == dataManager.CurrentUser.UserId)
+            .ToList();
+
+        if (userSessions.Count == 0)
         {
             AnsiConsole.MarkupLine(
                 "[red]No workout sessions found. Start a workout routine to record sessions.[/]"
@@ -596,7 +680,7 @@ public class ConsoleUI
             return;
         }
 
-        var statsList = statsManager.GetStats(dataManager.WorkoutSessions);
+        var statsList = statsManager.GetStats(userSessions);
 
         foreach (var stats in statsList)
         {
@@ -639,6 +723,112 @@ public class ConsoleUI
         }
 
         AnsiConsole.MarkupLine("[grey]Press any key to return to the main menu.[/]");
+        Console.ReadKey(true);
+    }
+
+    private void CompareRecentActivities()
+    {
+        var userSessions = dataManager
+            .WorkoutSessions.Where(s => s.UserId == dataManager.CurrentUser.UserId)
+            .ToList();
+
+        var selectedType = AnsiConsole.Prompt(
+            new SelectionPrompt<ExerciseType>()
+                .Title("Select [green]exercise type[/] to compare:")
+                .AddChoices(Enum.GetValues<ExerciseType>())
+        );
+
+        var recentSessions = statsManager.GetTwoMostRecentByType(userSessions, selectedType);
+
+        if (recentSessions.Count == 0)
+        {
+            AnsiConsole.MarkupLine($"[grey]No sessions found with {selectedType} exercises.[/]");
+            Console.ReadKey(true);
+            return;
+        }
+
+        if (recentSessions.Count == 1)
+        {
+            AnsiConsole.MarkupLine(
+                $"[grey]Only one {selectedType} session found. Need at least two to compare.[/]"
+            );
+            Console.ReadKey(true);
+            return;
+        }
+
+        var recentStats = statsManager.ParseSessionStatsByType(recentSessions[0], selectedType);
+        var previousStats = statsManager.ParseSessionStatsByType(recentSessions[1], selectedType);
+
+        var comparisonTable = new Table()
+            .Border(TableBorder.Rounded)
+            .Title($"[bold blue]Progress Comparison: {selectedType}[/]")
+            .AddColumn("Metric")
+            .AddColumn($"[bold]Most Recent[/]\n[grey]{recentSessions[0].SessionDate:MM/dd/yyyy}[/]")
+            .AddColumn($"[bold]Previous[/]\n[grey]{recentSessions[1].SessionDate:MM/dd/yyyy}[/]")
+            .AddColumn("[bold]Change[/]");
+
+        if (recentStats.TotalSets > 0 || previousStats.TotalSets > 0)
+        {
+            var diff = recentStats.TotalSets - previousStats.TotalSets;
+            var change =
+                diff > 0 ? $"[green]+{diff}[/]"
+                : diff < 0 ? $"[red]{diff}[/]"
+                : "[grey]–[/]";
+            comparisonTable.AddRow(
+                "Sets",
+                recentStats.TotalSets.ToString(),
+                previousStats.TotalSets.ToString(),
+                change
+            );
+        }
+
+        if (recentStats.TotalReps > 0 || previousStats.TotalReps > 0)
+        {
+            var diff = recentStats.TotalReps - previousStats.TotalReps;
+            var change =
+                diff > 0 ? $"[green]+{diff}[/]"
+                : diff < 0 ? $"[red]{diff}[/]"
+                : "[grey]–[/]";
+            comparisonTable.AddRow(
+                "Reps",
+                recentStats.TotalReps.ToString(),
+                previousStats.TotalReps.ToString(),
+                change
+            );
+        }
+
+        if (recentStats.TotalMinutes > 0 || previousStats.TotalMinutes > 0)
+        {
+            var diff = recentStats.TotalMinutes - previousStats.TotalMinutes;
+            var change =
+                diff > 0 ? $"[green]+{diff:F1}[/]"
+                : diff < 0 ? $"[red]{diff:F1}[/]"
+                : "[grey]–[/]";
+            comparisonTable.AddRow(
+                "Minutes",
+                recentStats.TotalMinutes.ToString("F1"),
+                previousStats.TotalMinutes.ToString("F1"),
+                change
+            );
+        }
+
+        if (recentStats.TotalDistance > 0 || previousStats.TotalDistance > 0)
+        {
+            var diff = recentStats.TotalDistance - previousStats.TotalDistance;
+            var change =
+                diff > 0 ? $"[green]+{diff:F1}[/]"
+                : diff < 0 ? $"[red]{diff:F1}[/]"
+                : "[grey]–[/]";
+            comparisonTable.AddRow(
+                "Distance (mi)",
+                recentStats.TotalDistance.ToString("F1"),
+                previousStats.TotalDistance.ToString("F1"),
+                change
+            );
+        }
+
+        AnsiConsole.Write(comparisonTable);
+        AnsiConsole.MarkupLine("[grey]Press any key to go back.[/]");
         Console.ReadKey(true);
     }
 }

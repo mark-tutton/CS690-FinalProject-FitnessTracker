@@ -16,10 +16,6 @@ public class DataManager
 
     public List<WorkoutSession> WorkoutSessions { get; private set; }
 
-    // public List<ProgressTracker> ProgressTrackers { get; private set; }
-
-    // public List<StatsTracker> StatsTrackers { get; private set; }
-
     public DataManager()
     {
         fileManager = new FileManager();
@@ -209,21 +205,27 @@ public class DataManager
             var lines = fileManager.ReadAllLines("data/workoutSessions.txt");
             foreach (var line in lines)
             {
-                var parts = line.Split(":");
-                if (parts.Length >= 5)
+                var parts = line.Split(":", 6);
+                if (parts.Length >= 6)
                 {
                     var sessionId = parts[0];
-                    var routine = WorkoutRoutines.FirstOrDefault(r => r.WorkoutRoutineId == parts[1]);
-                    var sessionDate = DateTime.ParseExact(parts[2], "yyyy-MM-dd HH-mm-ss", null);
+                    var userId = parts[1];
+                    var routine = WorkoutRoutines.FirstOrDefault(r => r.WorkoutRoutineId == parts[2]);
+                    var sessionDate = DateTime.ParseExact(parts[3], "yyyy-MM-dd HH-mm-ss", null);
 
-                    var sessionCompleted = bool.Parse(parts[3]);
-                    var notes = parts[4];
+                    var sessionCompleted = bool.Parse(parts[4]);
+                    // var notes = parts[5];
+                         var noteParts = parts[5].Split('|', 2);
+     var notes = noteParts[0];
+                    // var userNotes = parts.Length >= 6 ? parts[6] : "";
+                         var userNotes = noteParts.Length > 1 ? noteParts[1] : "";
 
                     if (routine != null)
                     {
-                        var session = new WorkoutSession(sessionId, sessionDate, routine);
+                        var session = new WorkoutSession(sessionId, userId, sessionDate, routine);
                         if (sessionCompleted) session.MarkSessionCompleted();
                         session.AddNotes(notes);
+                        session.AddUserNotes(userNotes);
                         WorkoutSessions.Add(session);
                     }
                 }
@@ -236,7 +238,7 @@ public class DataManager
 
     private void SaveWorkoutSessions()
     {
-        var data = string.Join(Environment.NewLine, WorkoutSessions.Select(ws => $"{ws.SessionId}:{ws.Routine.WorkoutRoutineId}:{ws.SessionDate:yyyy-MM-dd HH-mm-ss}:{ws.IsCompleted}:{ws.Notes}"));
+        var data = string.Join(Environment.NewLine, WorkoutSessions.Select(ws => $"{ws.SessionId}:{ws.UserId}:{ws.Routine.WorkoutRoutineId}:{ws.SessionDate:yyyy-MM-dd HH-mm-ss}:{ws.IsCompleted}:{ws.Notes}|{ws.UserNotes}"));
         fileManager.OverwriteData("data/workoutSessions.txt", data);
     }
 

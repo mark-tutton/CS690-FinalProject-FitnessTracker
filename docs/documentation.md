@@ -126,7 +126,21 @@ For each routine, the following totals and per-session averages are shown:
 
 Compare the two most recent sessions of a workout routine to view progress.
 
-**NOTE: This feature will be implemented in Iteration 3**
+**Navigation:** Main Menu → View Progress and Stats → Compare Recent Activities
+
+1. Select an exercise type: Cardio, Strength, Flexibility, or Balance.
+2. The app finds the two most recent completed sessions that contain exercises of the selected type.
+3. A table is displayed comparing aggregated totals from each session:
+
+| Metric        | Most Recent [date] | Previous [date] | Change |
+| ------------- | ------------------ | --------------- | ------ |
+| Sets          | 10                 | 9               | +1     |
+| Reps          | 120                | 108             | +12    |
+| Minutes       | 45.0               | 40.0            | +5.0   |
+| Distance (mi) | 3.1                | 2.8             | +0.3   |
+
+- Only rows with recorded data for at least one session are shown.
+- If fewer than two sessions exist for the selected type, a message is shown and you are returned to the menu.
 
 ---
 
@@ -175,5 +189,5 @@ Run `dotnet test`
 1. Go to the [releases page](https://github.com/mark-tutton/CS690-FinalProject-FitnessTracker/releases)
 2. Download the latest release
 3. Extract the zip
-4. cd into the FitnessTracker-v2.0.0 directory
+4. cd into the FitnessTracker-v3.0.0 directory
 5. Run the executable using `dotnet FitnessTracker.dll`
