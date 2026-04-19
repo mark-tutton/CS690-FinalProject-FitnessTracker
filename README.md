@@ -1,4 +1,4 @@
-#CS690-FinalProject-FitnessTracker
+# CS690-FinalProject-FitnessTracker
 
 A console-based application for planning and tracking workout routines.
 
