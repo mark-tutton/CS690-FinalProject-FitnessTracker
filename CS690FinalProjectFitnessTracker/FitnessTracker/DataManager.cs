@@ -214,11 +214,10 @@ public class DataManager
                     var sessionDate = DateTime.ParseExact(parts[3], "yyyy-MM-dd HH-mm-ss", null);
 
                     var sessionCompleted = bool.Parse(parts[4]);
-                    // var notes = parts[5];
-                         var noteParts = parts[5].Split('|', 2);
-     var notes = noteParts[0];
-                    // var userNotes = parts.Length >= 6 ? parts[6] : "";
-                         var userNotes = noteParts.Length > 1 ? noteParts[1] : "";
+
+                    var noteParts = parts[5].Split('|', 2);
+                    var notes = noteParts[0];
+                    var userNotes = noteParts.Length > 1 ? noteParts[1] : "";
 
                     if (routine != null)
                     {
